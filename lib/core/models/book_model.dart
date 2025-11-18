@@ -42,7 +42,7 @@ class BookModel extends Equatable {
   final bool completed;
   final DateTime? endDate;
   final DateTime? lastRead;
-  final List<TimeOfDay>? whenToRead;
+  final List<TimeOfDay?>? whenToRead;
   final int? durationToRead;
   final int? currentPage;
   final bool favorite;
@@ -173,22 +173,19 @@ class BookModel extends Equatable {
       endDate: json['end_date'] != null
           ? DateTime.tryParse(json['end_date'] as String)
           : null,
-      whenToRead: (json['when_to_read'] as List<dynamic>?)
-          ?.map((e) {
-            if (e is String) {
-              final parts = e.split(':');
-              if (parts.length >= 2) {
-                final hour = int.tryParse(parts[0]);
-                final minute = int.tryParse(parts[1]);
-                if (hour != null && minute != null) {
-                  return TimeOfDay(hour: hour, minute: minute);
-                }
-              }
+      whenToRead: (json['when_to_read'] as List<dynamic>?)?.map((e) {
+        if (e is String) {
+          final parts = e.split(':');
+          if (parts.length >= 2) {
+            final hour = int.tryParse(parts[0]);
+            final minute = int.tryParse(parts[1]);
+            if (hour != null && minute != null) {
+              return TimeOfDay(hour: hour, minute: minute);
             }
-            return null;
-          })
-          .whereType<TimeOfDay>()
-          .toList(),
+          }
+        }
+        return null;
+      }).toList(),
       durationToRead: json['duration_to_read'] as int?,
       currentPage: json['current_page'] as int?,
       favorite: json['favorite'] as bool? ?? false,
@@ -227,7 +224,7 @@ class BookModel extends Equatable {
       'started_time': startedTime?.toIso8601String(),
       'completed': completed,
       'end_date': endDate?.toIso8601String(),
-      'when_to_read': whenToRead?.map((e) => e.toString()).toList(),
+      'when_to_read': whenToRead?.map((e) => e?.toString()).toList(),
       'duration_to_read': durationToRead,
       'current_page': currentPage,
       'favorite': favorite,
@@ -265,7 +262,7 @@ class BookModel extends Equatable {
     DateTime? startedTime,
     bool? completed,
     DateTime? endDate,
-    List<TimeOfDay>? whenToRead,
+    List<TimeOfDay?>? whenToRead,
     int? durationToRead,
     int? currentPage,
     bool? favorite,
