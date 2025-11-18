@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:new_project/features/notification_settings/domain/usecases/save_notification_token_usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/network/api_client.dart';
@@ -15,6 +16,10 @@ import '../core/utils/constants.dart';
 import '../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
 import '../features/auth/domain/repositories/auth_repository.dart';
+import '../features/auth/domain/usecases/reset_password_usecase.dart';
+import '../features/auth/domain/usecases/update_password_usecase.dart';
+import '../features/auth/domain/usecases/verify_otp_usecase.dart';
+import '../features/auth/domain/usecases/verify_email_usecase.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 
 // Books
@@ -76,7 +81,9 @@ import '../features/author_detail/data/datasources/author_detail_remote_data_sou
 import '../features/author_detail/data/repositories/author_detail_repository_impl.dart';
 import '../features/author_detail/domain/repositories/author_detail_repository.dart';
 import '../features/author_detail/domain/usecases/get_author_detail_usecase.dart';
+import '../features/author_detail/domain/usecases/get_author_works_usecase.dart';
 import '../features/author_detail/presentation/bloc/author_detail_bloc.dart';
+import '../features/author_detail/presentation/bloc/author_works_bloc.dart';
 
 // Book Detail
 import '../features/books/data/datasources/book_detail_remote_data_source.dart';
@@ -145,7 +152,20 @@ Future<void> initializeDependencies() async {
     () => AuthRepositoryImpl(remoteDataSource: sl()),
   );
 
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerLazySingleton(() => ResetPasswordUseCase(sl()));
+  sl.registerLazySingleton(() => VerifyOtpUseCase(sl()));
+  sl.registerLazySingleton(() => VerifyEmailUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePasswordUseCase(sl()));
+
+  sl.registerFactory(
+    () => AuthBloc(
+      authRepository: sl(),
+      resetPasswordUseCase: sl(),
+      verifyOtpUseCase: sl(),
+      verifyEmailUseCase: sl(),
+      updatePasswordUseCase: sl(),
+    ),
+  );
 
   // Books
   sl.registerLazySingleton<BookRemoteDataSource>(
@@ -223,10 +243,15 @@ Future<void> initializeDependencies() async {
     () => UpdateNotificationSettingsUseCase(sl()),
   );
 
+  sl.registerLazySingleton<SaveNotificationTokenUseCase>(
+    () => SaveNotificationTokenUseCase(sl()),
+  );
+
   sl.registerFactory(
     () => NotificationBloc(
       getNotificationSettingsUseCase: sl(),
       updateNotificationSettingsUseCase: sl(),
+      saveNotificationTokenUseCase: sl(),
     ),
   );
 
@@ -302,8 +327,10 @@ Future<void> initializeDependencies() async {
   );
 
   sl.registerLazySingleton(() => GetAuthorDetailUseCase(sl()));
+  sl.registerLazySingleton(() => GetAuthorWorksUseCase(sl()));
 
   sl.registerFactory(() => AuthorDetailBloc(getAuthorDetailUseCase: sl()));
+  sl.registerFactory(() => AuthorWorksBloc(sl()));
 
   // Book Detail
   sl.registerLazySingleton<BookDetailRemoteDataSource>(
