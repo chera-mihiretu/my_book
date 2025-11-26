@@ -8,7 +8,7 @@ class AuthLogo extends StatelessWidget {
 
   const AuthLogo({
     super.key,
-    this.size = 80,
+    this.size = 110,
     this.backgroundColor = const Color(0xFF6B4EFF),
     this.icon = Icons.menu_book_rounded,
   });
@@ -22,8 +22,18 @@ class AuthLogo extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-        child: Icon(icon, size: size * 0.5, color: Colors.white),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.asset('assets/images/logo.png'),
+        ),
       ),
     );
   }

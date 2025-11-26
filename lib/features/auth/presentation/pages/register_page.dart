@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/custom_snackbar.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -30,11 +32,10 @@ class RegisterPage extends HookWidget {
     void handleRegister() {
       if (formKey.currentState!.validate()) {
         if (passwordController.text != confirmPasswordController.text) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Passwords do not match'),
-              backgroundColor: Colors.red.shade700,
-            ),
+          CustomSnackBar.show(
+            context,
+            message: 'Passwords do not match',
+            type: SnackBarType.error,
           );
           return;
         }
@@ -51,8 +52,10 @@ class RegisterPage extends HookWidget {
     }
 
     void handleGoogleSignIn() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google Sign In - Coming Soon')),
+      CustomSnackBar.show(
+        context,
+        message: 'Google Sign In - Coming Soon',
+        type: SnackBarType.warning,
       );
     }
 
@@ -62,22 +65,21 @@ class RegisterPage extends HookWidget {
         listener: (context, state) {
           if (state is RegistrationSuccess) {
             isLoading.value = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Registration successful! Please login.'),
-                backgroundColor: Colors.green,
-              ),
+            CustomSnackBar.show(
+              context,
+              message:
+                  'Registration successful! Veryify please verify your email.',
+              type: SnackBarType.success,
             );
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const LoginPage()),
             );
           } else if (state is AuthError) {
             isLoading.value = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red.shade700,
-              ),
+            CustomSnackBar.show(
+              context,
+              message: state.message,
+              type: SnackBarType.error,
             );
           }
         },
@@ -110,15 +112,7 @@ class RegisterPage extends HookWidget {
                         labelText: 'Full Name',
                         prefixIcon: Icons.person_outline,
                         keyboardType: TextInputType.name,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your name';
-                          }
-                          if (value.length < 2) {
-                            return 'Name must be at least 2 characters';
-                          }
-                          return null;
-                        },
+                        validator: Validators.name,
                       ),
                       const SizedBox(height: 16),
 
@@ -128,15 +122,7 @@ class RegisterPage extends HookWidget {
                         labelText: 'Email',
                         prefixIcon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          if (!value.contains('@')) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
-                        },
+                        validator: Validators.email,
                       ),
                       const SizedBox(height: 16),
 
@@ -157,15 +143,7 @@ class RegisterPage extends HookWidget {
                             obscurePassword.value = !obscurePassword.value;
                           },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
+                        validator: Validators.password,
                       ),
                       const SizedBox(height: 16),
 
@@ -187,15 +165,10 @@ class RegisterPage extends HookWidget {
                                 !obscureConfirmPassword.value;
                           },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
-                          }
-                          if (value != passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
+                        validator: (value) => Validators.confirmPassword(
+                          value,
+                          passwordController.text,
+                        ),
                       ),
                       const SizedBox(height: 24),
 

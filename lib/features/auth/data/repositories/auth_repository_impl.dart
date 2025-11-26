@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/models/user_model.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -15,8 +16,17 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    // TODO: Implement login
-    throw UnimplementedError();
+    try {
+      final user = await remoteDataSource.login(
+        email: email,
+        password: password,
+      );
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
   }
 
   @override
@@ -25,8 +35,18 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String name,
   }) async {
-    // TODO: Implement register
-    throw UnimplementedError();
+    try {
+      final user = await remoteDataSource.register(
+        email: email,
+        password: password,
+        name: name,
+      );
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
   }
 
   @override

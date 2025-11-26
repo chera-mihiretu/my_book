@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../domain/models/user_model.dart';
 
 /// Auth remote data source interface
@@ -25,8 +26,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
-    // TODO: Implement login
-    throw UnimplementedError();
+    try {
+      final response = await supabase.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = response.user;
+      if (user == null) {
+        throw ServerException('Login failed: User is null');
+      }
+
+      return UserModel(
+        id: user.id,
+        email: user.email!,
+        name: user.userMetadata?['name'] ?? '',
+        createdAt: DateTime.parse(user.createdAt),
+        updatedAt: user.updatedAt != null
+            ? DateTime.parse(user.updatedAt!)
+            : null,
+      );
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override
@@ -35,8 +59,32 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
     required String name,
   }) async {
-    // TODO: Implement register
-    throw UnimplementedError();
+    try {
+      final response = await supabase.client.auth.signUp(
+        email: email,
+        password: password,
+        data: {'name': name},
+      );
+
+      final user = response.user;
+      if (user == null) {
+        throw ServerException('Registration failed: User is null');
+      }
+
+      return UserModel(
+        id: user.id,
+        email: user.email!,
+        name: user.userMetadata?['name'] ?? name,
+        createdAt: DateTime.parse(user.createdAt),
+        updatedAt: user.updatedAt != null
+            ? DateTime.parse(user.updatedAt!)
+            : null,
+      );
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override

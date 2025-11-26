@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/custom_snackbar.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -37,14 +39,18 @@ class LoginPage extends HookWidget {
     }
 
     void handleGoogleSignIn() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google Sign In - Coming Soon')),
+      CustomSnackBar.show(
+        context,
+        message: 'Google Sign In - Coming Soon',
+        type: SnackBarType.warning,
       );
     }
 
     void handleForgotPassword() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Forgot Password - Coming Soon')),
+      CustomSnackBar.show(
+        context,
+        message: 'Forgot Password - Coming Soon',
+        type: SnackBarType.warning,
       );
     }
 
@@ -54,14 +60,18 @@ class LoginPage extends HookWidget {
         listener: (context, state) {
           if (state is Authenticated) {
             isLoading.value = false;
+            CustomSnackBar.show(
+              context,
+              message: 'Login successful!',
+              type: SnackBarType.success,
+            );
             // TODO: Navigate to home
           } else if (state is AuthError) {
             isLoading.value = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red.shade700,
-              ),
+            CustomSnackBar.show(
+              context,
+              message: state.message,
+              type: SnackBarType.error,
             );
           }
         },
@@ -94,15 +104,7 @@ class LoginPage extends HookWidget {
                         labelText: 'Email',
                         prefixIcon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          if (!value.contains('@')) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
-                        },
+                        validator: Validators.email,
                       ),
                       const SizedBox(height: 16),
 
@@ -123,15 +125,7 @@ class LoginPage extends HookWidget {
                             obscurePassword.value = !obscurePassword.value;
                           },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
+                        validator: Validators.password,
                       ),
                       const SizedBox(height: 8),
 

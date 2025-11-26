@@ -20,14 +20,28 @@ class UserModel extends Equatable {
 
   /// Create UserModel from JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // TODO: Implement fromJson
-    throw UnimplementedError();
+    return UserModel(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      name: json['name'] as String,
+      avatar: json['avatar'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+    );
   }
 
   /// Convert UserModel to JSON
   Map<String, dynamic> toJson() {
-    // TODO: Implement toJson
-    throw UnimplementedError();
+    return {
+      'id': id,
+      'email': email,
+      'name': name,
+      'avatar': avatar,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
   }
 
   /// Create a copy with updated fields
@@ -39,8 +53,14 @@ class UserModel extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
-    // TODO: Implement copyWith
-    throw UnimplementedError();
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      avatar: avatar ?? this.avatar,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
   @override

@@ -17,12 +17,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   /// Handle login event
   Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
-    // TODO: Implement login handler
+    emit(const AuthLoading());
+    final result = await authRepository.login(
+      email: event.email,
+      password: event.password,
+    );
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (user) => emit(Authenticated(user)),
+    );
   }
 
   /// Handle register event
   Future<void> _onRegister(RegisterEvent event, Emitter<AuthState> emit) async {
-    // TODO: Implement register handler
+    emit(const AuthLoading());
+    final result = await authRepository.register(
+      email: event.email,
+      password: event.password,
+      name: event.name,
+    );
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (user) => emit(RegistrationSuccess(user)),
+    );
   }
 
   /// Handle logout event
