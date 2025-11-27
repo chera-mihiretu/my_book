@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/repositories/favorite_repository.dart';
+import 'package:new_project/features/favorites/domain/repositories/favorite_repository.dart';
 import 'favorite_event.dart';
 import 'favorite_state.dart';
 

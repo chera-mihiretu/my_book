@@ -8,7 +8,7 @@ class LoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: Implement loading indicator
-    return const Center(child: CircularProgressIndicator());
+    return const Center(child: CircularProgressIndicator(strokeWidth: 1));
   }
 }
 

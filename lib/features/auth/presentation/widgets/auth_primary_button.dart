@@ -32,7 +32,7 @@ class AuthPrimaryButton extends StatelessWidget {
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                  strokeWidth: 1,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     Theme.of(context).colorScheme.onPrimary,
                   ),

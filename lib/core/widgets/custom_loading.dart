@@ -20,7 +20,7 @@ class CustomLoading {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(),
+                const CircularProgressIndicator(strokeWidth: 1),
                 if (message != null) ...[
                   const SizedBox(height: 16),
                   Text(
@@ -58,7 +58,7 @@ class CustomLoading {
             width: size,
             height: size,
             child: CircularProgressIndicator(
-              strokeWidth: 3,
+              strokeWidth: 1,
               valueColor: color != null
                   ? AlwaysStoppedAnimation<Color>(color)
                   : null,
