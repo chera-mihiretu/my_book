@@ -50,6 +50,13 @@ import '../features/author_detail/domain/repositories/author_detail_repository.d
 import '../features/author_detail/domain/usecases/get_author_detail_usecase.dart';
 import '../features/author_detail/presentation/bloc/author_detail_bloc.dart';
 
+// Book Detail
+import '../features/books/data/datasources/book_detail_remote_data_source.dart';
+import '../features/books/data/repositories/book_detail_repository_impl.dart';
+import '../features/books/domain/repositories/book_detail_repository.dart';
+import '../features/books/domain/usecases/get_book_detail_usecase.dart';
+import '../features/books/presentation/bloc/book_detail_bloc.dart';
+
 final sl = GetIt.instance;
 
 /// Initialize dependency injection
@@ -162,4 +169,17 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => GetAuthorDetailUseCase(sl()));
 
   sl.registerFactory(() => AuthorDetailBloc(getAuthorDetailUseCase: sl()));
+
+  // Book Detail
+  sl.registerLazySingleton<BookDetailRemoteDataSource>(
+    () => BookDetailRemoteDataSourceImpl(client: sl()),
+  );
+
+  sl.registerLazySingleton<BookDetailRepository>(
+    () => BookDetailRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton(() => GetBookDetailUseCase(sl()));
+
+  sl.registerFactory(() => BookDetailBloc(getBookDetailUseCase: sl()));
 }

@@ -29,6 +29,14 @@ class BookModel extends Equatable {
   final String? lendingIdentifierS;
   final bool? publicScanB;
 
+  // Detail fields (from detail API)
+  final String? description;
+  final List<String>? subjects;
+  final List<String>? publishers;
+  final int? numberOfPages;
+  final String? publishDate;
+  final Map<String, String>? coverUrls; // small, medium, large
+
   // Reading progress & planning
   final DateTime? startedTime;
   final bool completed;
@@ -50,7 +58,6 @@ class BookModel extends Equatable {
     this.coverPhotoUrl,
     this.authorPhotoUrl,
     this.ebookAccess,
-
     this.editionCount,
     this.firstPublishYear,
     this.hasFulltext,
@@ -60,6 +67,12 @@ class BookModel extends Equatable {
     this.lendingEditionS,
     this.lendingIdentifierS,
     this.publicScanB,
+    this.description,
+    this.subjects,
+    this.publishers,
+    this.numberOfPages,
+    this.publishDate,
+    this.coverUrls,
     this.startedTime,
     this.completed = false,
     this.endDate,
@@ -69,6 +82,66 @@ class BookModel extends Equatable {
   });
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
+    // Parse authors from detail API format
+    List<String>? parseAuthorNames(dynamic authorsJson) {
+      if (authorsJson is List) {
+        return authorsJson
+            .map((e) => e is Map ? (e['name'] as String?) ?? '' : e.toString())
+            .where((name) => name.isNotEmpty)
+            .toList();
+      }
+      return null;
+    }
+
+    // Parse subjects from detail API format
+    List<String>? parseSubjects(dynamic subjectsJson) {
+      if (subjectsJson is List) {
+        return subjectsJson
+            .map((e) => e is Map ? (e['name'] as String?) ?? '' : e.toString())
+            .where((name) => name.isNotEmpty)
+            .toList();
+      }
+      return null;
+    }
+
+    // Parse publishers from detail API format
+    List<String>? parsePublishers(dynamic publishersJson) {
+      if (publishersJson is List) {
+        return publishersJson
+            .map((e) => e is Map ? (e['name'] as String?) ?? '' : e.toString())
+            .where((name) => name.isNotEmpty)
+            .toList();
+      }
+      return null;
+    }
+
+    // Parse cover URLs from detail API format
+    Map<String, String>? parseCoverUrls(dynamic coverJson) {
+      if (coverJson is Map) {
+        return {
+          if (coverJson['small'] != null) 'small': coverJson['small'] as String,
+          if (coverJson['medium'] != null)
+            'medium': coverJson['medium'] as String,
+          if (coverJson['large'] != null) 'large': coverJson['large'] as String,
+        };
+      }
+      return null;
+    }
+
+    // Parse description from detail API (can be in excerpts or description field)
+    String? parseDescription(Map<String, dynamic> json) {
+      if (json['excerpts'] != null && json['excerpts'] is List) {
+        final excerpts = json['excerpts'] as List;
+        if (excerpts.isNotEmpty && excerpts.first is Map) {
+          return excerpts.first['text'] as String?;
+        }
+      }
+      if (json['description'] is String) {
+        return json['description'] as String;
+      }
+      return null;
+    }
+
     return BookModel(
       id: json['id'] as String?,
       userId: json['user_id'] as String?,
@@ -77,10 +150,11 @@ class BookModel extends Equatable {
       authorKey: (json['author_key'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
-      authorName: (json['author_name'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      // Handle "key" from Open Library or "book_key" from Supabase
+      authorName: (json['author_name'] as List<dynamic>?) != null
+          ? (json['author_name'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList()
+          : parseAuthorNames(json['authors']),
       bookKey: json['book_key'] as String? ?? json['key'] as String?,
       coverEditionKey: json['cover_edition_key'] as String?,
       coverI: json['cover_i'] as int?,
@@ -91,7 +165,6 @@ class BookModel extends Equatable {
       firstPublishYear: json['first_publish_year'] as int?,
       hasFulltext: json['has_fulltext'] as bool?,
       ia: (json['ia'] as List<dynamic>?)?.map((e) => e as String).toList(),
-
       iaCollectionS: json['ia_collection_s'] as String?,
       language: (json['language'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -99,6 +172,12 @@ class BookModel extends Equatable {
       lendingEditionS: json['lending_edition_s'] as String?,
       lendingIdentifierS: json['lending_identifier_s'] as String?,
       publicScanB: json['public_scan_b'] as bool?,
+      description: parseDescription(json),
+      subjects: parseSubjects(json['subjects']),
+      publishers: parsePublishers(json['publishers']),
+      numberOfPages: json['number_of_pages'] as int?,
+      publishDate: json['publish_date'] as String?,
+      coverUrls: parseCoverUrls(json['cover']),
       startedTime: json['started_time'] != null
           ? DateTime.tryParse(json['started_time'] as String)
           : null,
@@ -137,6 +216,12 @@ class BookModel extends Equatable {
       'lending_edition_s': lendingEditionS,
       'lending_identifier_s': lendingIdentifierS,
       'public_scan_b': publicScanB,
+      'description': description,
+      'subjects': subjects,
+      'publishers': publishers,
+      'number_of_pages': numberOfPages,
+      'publish_date': publishDate,
+      'cover': coverUrls,
       'started_time': startedTime?.toIso8601String(),
       'completed': completed,
       'end_date': endDate?.toIso8601String(),
@@ -168,6 +253,12 @@ class BookModel extends Equatable {
     String? lendingEditionS,
     String? lendingIdentifierS,
     bool? publicScanB,
+    String? description,
+    List<String>? subjects,
+    List<String>? publishers,
+    int? numberOfPages,
+    String? publishDate,
+    Map<String, String>? coverUrls,
     DateTime? startedTime,
     bool? completed,
     DateTime? endDate,
@@ -197,6 +288,12 @@ class BookModel extends Equatable {
       lendingEditionS: lendingEditionS ?? this.lendingEditionS,
       lendingIdentifierS: lendingIdentifierS ?? this.lendingIdentifierS,
       publicScanB: publicScanB ?? this.publicScanB,
+      description: description ?? this.description,
+      subjects: subjects ?? this.subjects,
+      publishers: publishers ?? this.publishers,
+      numberOfPages: numberOfPages ?? this.numberOfPages,
+      publishDate: publishDate ?? this.publishDate,
+      coverUrls: coverUrls ?? this.coverUrls,
       startedTime: startedTime ?? this.startedTime,
       completed: completed ?? this.completed,
       endDate: endDate ?? this.endDate,
@@ -229,6 +326,12 @@ class BookModel extends Equatable {
     lendingEditionS,
     lendingIdentifierS,
     publicScanB,
+    description,
+    subjects,
+    publishers,
+    numberOfPages,
+    publishDate,
+    coverUrls,
     startedTime,
     completed,
     endDate,

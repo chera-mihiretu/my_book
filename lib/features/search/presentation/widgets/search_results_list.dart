@@ -7,6 +7,7 @@ import '../bloc/search_bloc.dart';
 import 'author_search_card.dart';
 import 'book_search_card.dart';
 import '../../../author_detail/presentation/pages/author_detail_page.dart';
+import '../../../books/presentation/pages/book_detail_page.dart';
 
 class SearchResultsList extends StatelessWidget {
   final ScrollController scrollController;
@@ -76,7 +77,19 @@ class SearchResultsList extends StatelessWidget {
         return BookSearchCard(
           book: state.books[index],
           onTap: () {
-            // TODO: Navigate to book details
+            // Navigate to book details
+            final bookOLIDKey = state.books[index].coverEditionKey;
+            if (bookOLIDKey != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookDetailPage(
+                    bookOLIDKey: bookOLIDKey,
+                    title: state.books[index].title,
+                  ),
+                ),
+              );
+            }
           },
         );
       },
