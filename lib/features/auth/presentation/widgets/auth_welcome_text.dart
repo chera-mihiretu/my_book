@@ -17,17 +17,22 @@ class AuthWelcomeText extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2D3142),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
           subtitle,
-          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          style: TextStyle(
+            fontSize: 14,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withAlpha((0.6 * 255).toInt()),
+          ),
           textAlign: TextAlign.center,
         ),
       ],

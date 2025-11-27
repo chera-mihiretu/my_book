@@ -35,6 +35,21 @@ import '../features/reading/data/repositories/reading_repository_impl.dart';
 import '../features/reading/domain/repositories/reading_repository.dart';
 import '../features/reading/presentation/bloc/reading_bloc.dart';
 
+// Search
+import '../features/search/data/datasources/search_remote_data_source.dart';
+import '../features/search/data/repositories/search_repository_impl.dart';
+import '../features/search/domain/repositories/search_repository.dart';
+import '../features/search/domain/usecases/search_books_usecase.dart';
+import '../features/search/domain/usecases/search_authors_usecase.dart';
+import '../features/search/presentation/bloc/search_bloc.dart';
+
+// Author Detail
+import '../features/author_detail/data/datasources/author_detail_remote_data_source.dart';
+import '../features/author_detail/data/repositories/author_detail_repository_impl.dart';
+import '../features/author_detail/domain/repositories/author_detail_repository.dart';
+import '../features/author_detail/domain/usecases/get_author_detail_usecase.dart';
+import '../features/author_detail/presentation/bloc/author_detail_bloc.dart';
+
 final sl = GetIt.instance;
 
 /// Initialize dependency injection
@@ -118,4 +133,33 @@ Future<void> initializeDependencies() async {
   );
 
   sl.registerFactory(() => ReadingBloc(readingRepository: sl()));
+
+  // Search
+  sl.registerLazySingleton<SearchRemoteDataSource>(
+    () => SearchRemoteDataSourceImpl(client: sl()),
+  );
+
+  sl.registerLazySingleton<SearchRepository>(
+    () => SearchRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton(() => SearchBooksUseCase(sl()));
+  sl.registerLazySingleton(() => SearchAuthorsUseCase(sl()));
+
+  sl.registerFactory(
+    () => SearchBloc(searchBooksUseCase: sl(), searchAuthorsUseCase: sl()),
+  );
+
+  // Author Detail
+  sl.registerLazySingleton<AuthorDetailRemoteDataSource>(
+    () => AuthorDetailRemoteDataSourceImpl(client: sl()),
+  );
+
+  sl.registerLazySingleton<AuthorDetailRepository>(
+    () => AuthorDetailRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton(() => GetAuthorDetailUseCase(sl()));
+
+  sl.registerFactory(() => AuthorDetailBloc(getAuthorDetailUseCase: sl()));
 }

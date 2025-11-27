@@ -27,25 +27,31 @@ class AppConstants {
 
 /// API Endpoints
 class ApiEndpoints {
-  // Auth
-  static const String login = '/auth/login';
-  static const String register = '/auth/register';
-  static const String logout = '/auth/logout';
-  static const String refreshToken = '/auth/refresh';
+  static String searchBook(String book, {int page = 1, int limit = 10}) {
+    String url = Uri.encodeComponent(book);
+    return "https://openlibrary.org/search.json?q=$url&page=$page&limit=$limit";
+  }
 
-  // Books
-  static const String books = '/books';
-  static String bookDetail(String id) => '/books/$id';
+  static String searchAuthor(String author, {int page = 1, int limit = 10}) {
+    String url = Uri.encodeComponent(author);
+    return "https://openlibrary.org/search/authors.json?q=$url&page=$page&limit=$limit";
+  }
 
-  // Favorites
-  static const String favorites = '/favorites';
-  static String addFavorite(String bookId) => '/favorites/$bookId';
-  static String removeFavorite(String bookId) => '/favorites/$bookId';
+  static String getAuthorDetail(String authorKey) {
+    return "https://openlibrary.org/authors/$authorKey.json";
+  }
 
-  // Reading
-  static const String readingList = '/reading';
-  static const String readingSessions = '/reading/sessions';
-  static String readingSession(String id) => '/reading/sessions/$id';
+  static String getBookDetail(String bookOLIDKey) {
+    return "https://openlibrary.org/api/books?bibkeys=OLID:$bookOLIDKey&format=json&jscmd=data";
+  }
+
+  static String authorPhotoUrl(String authorPhotoKey) {
+    return "https://covers.openlibrary.org/a/id/$authorPhotoKey-M.jpg";
+  }
+
+  static String bookPhotoUrl(String bookPhotoKey) {
+    return "https://covers.openlibrary.org/b/olid/$bookPhotoKey-M.jpg";
+  }
 }
 
 /// Error Messages

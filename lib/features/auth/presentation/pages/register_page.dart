@@ -60,7 +60,7 @@ class RegisterPage extends HookWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is RegistrationSuccess) {
@@ -137,7 +137,8 @@ class RegisterPage extends HookWidget {
                             obscurePassword.value
                                 ? Icons.visibility_off
                                 : Icons.visibility,
-                            color: Colors.grey.shade600,
+                            color: Theme.of(context).colorScheme.onSurface
+                                .withAlpha((0.6 * 255).toInt()),
                           ),
                           onPressed: () {
                             obscurePassword.value = !obscurePassword.value;
@@ -199,7 +200,8 @@ class RegisterPage extends HookWidget {
                             Text(
                               'Already have an account? ',
                               style: TextStyle(
-                                color: Colors.grey.shade700,
+                                color: Theme.of(context).colorScheme.onSurface
+                                    .withAlpha((0.7 * 255).toInt()),
                                 fontSize: 13,
                               ),
                             ),
@@ -212,10 +214,10 @@ class RegisterPage extends HookWidget {
                                   horizontal: 4,
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Log In',
                                 style: TextStyle(
-                                  color: Color(0xFF6B4EFF),
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),

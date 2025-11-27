@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_project/features/author_detail/presentation/bloc/author_detail_bloc.dart';
+import 'package:new_project/features/search/presentation/bloc/search_bloc.dart';
+import 'package:new_project/wrapper_page.dart';
 
 import 'di/injector.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -9,7 +12,13 @@ import 'features/books/presentation/pages/book_list_page.dart';
 import 'features/favorites/presentation/bloc/favorite_bloc.dart';
 import 'features/favorites/presentation/pages/favorites_page.dart';
 import 'features/reading/presentation/bloc/reading_bloc.dart';
-import 'features/reading/presentation/pages/reading_list_page.dart';
+
+import 'core/theme/app_theme.dart';
+import 'features/design_system/pages/colors_page.dart';
+import 'features/completed/presentation/pages/completed_page.dart';
+import 'features/account/presentation/pages/account_page.dart';
+import 'features/search/presentation/pages/search_page.dart';
+import 'core/widgets/custom_bottom_nav.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,18 +40,20 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<BookBloc>()),
         BlocProvider(create: (_) => sl<FavoriteBloc>()),
         BlocProvider(create: (_) => sl<ReadingBloc>()),
+        BlocProvider(create: (_) => sl<SearchBloc>()),
+        BlocProvider(create: (_) => sl<AuthorDetailBloc>()),
       ],
       child: MaterialApp(
         title: 'Book App',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        home: const LoginPage(),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        home: const WrapperPage(),
         routes: {
           '/login': (context) => const LoginPage(),
           '/home': (context) => const HomePage(),
+          '/colors': (context) => const ColorsPage(),
         },
       ),
     );
@@ -63,31 +74,28 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = const [
     BookListPage(),
     FavoritesPage(),
-    ReadingListPage(),
+    CompletedPage(),
+    AccountPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Books'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Reading',
-          ),
-        ],
+      bottomNavigationBar: SafeArea(
+        child: CustomBottomNav(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          onSearchTap: () {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SearchPage()));
+          },
+        ),
       ),
     );
   }
