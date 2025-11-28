@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 class BookModel extends Equatable {
   // Supabase fields
@@ -40,7 +41,7 @@ class BookModel extends Equatable {
   final DateTime? startedTime;
   final bool completed;
   final DateTime? endDate;
-  final DateTime? whenToRead;
+  final List<TimeOfDay>? whenToRead;
   final int? durationToRead;
   final int? currentPage;
   final bool favorite;
@@ -171,7 +172,9 @@ class BookModel extends Equatable {
           ? DateTime.tryParse(json['end_date'] as String)
           : null,
       whenToRead: json['when_to_read'] != null
-          ? DateTime.tryParse(json['when_to_read'] as String)
+          ? (json['when_to_read'] as List<dynamic>)
+                .map((e) => TimeOfDay.fromDateTime(DateTime.parse(e)))
+                .toList()
           : null,
       durationToRead: json['duration_to_read'] as int?,
       currentPage: json['current_page'] as int?,
@@ -208,7 +211,7 @@ class BookModel extends Equatable {
       'started_time': startedTime?.toIso8601String(),
       'completed': completed,
       'end_date': endDate?.toIso8601String(),
-      'when_to_read': whenToRead?.toIso8601String(),
+      'when_to_read': whenToRead?.map((e) => e.toString()).toList(),
       'duration_to_read': durationToRead,
       'current_page': currentPage,
       'favorite': favorite,
@@ -245,7 +248,7 @@ class BookModel extends Equatable {
     DateTime? startedTime,
     bool? completed,
     DateTime? endDate,
-    DateTime? whenToRead,
+    List<TimeOfDay>? whenToRead,
     int? durationToRead,
     int? currentPage,
     bool? favorite,
