@@ -4,6 +4,7 @@ import '../../../../core/models/book_model.dart';
 
 abstract class ReadingListRemoteDataSource {
   Future<BookModel> addToReadingList(BookModel book);
+  Future<bool> checkIsInReadingList(String bookKey);
 }
 
 class ReadingListRemoteDataSourceImpl implements ReadingListRemoteDataSource {
@@ -81,6 +82,30 @@ class ReadingListRemoteDataSourceImpl implements ReadingListRemoteDataSource {
       return BookModel.fromJson(response);
     } catch (e) {
       throw ServerException();
+    }
+  }
+
+  @override
+  Future<bool> checkIsInReadingList(String bookKey) async {
+    try {
+      final userId = supabase.client.auth.currentUser?.id;
+      if (userId == null) return false;
+
+      final response = await supabase.client
+          .from('books')
+          .select('started_time, when_to_read, duration_to_read')
+          .eq('user_id', userId)
+          .eq('book_key', bookKey)
+          .maybeSingle();
+
+      if (response == null) return false;
+
+      // Check if any of the reading list fields are not null
+      return response['started_time'] != null ||
+          response['when_to_read'] != null ||
+          response['duration_to_read'] != null;
+    } catch (e) {
+      return false;
     }
   }
 }

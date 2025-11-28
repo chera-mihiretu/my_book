@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/custom_loading.dart';
 import '../../../../core/widgets/custom_snackbar.dart';
+import '../../../../di/injector.dart';
 import '../bloc/book_detail_bloc.dart';
 import '../../../../core/models/book_model.dart';
 import '../../../favorites/presentation/bloc/favorite_bloc.dart';
 import '../../../favorites/presentation/bloc/favorite_event.dart';
 import '../../../favorites/presentation/bloc/favorite_state.dart';
+import '../../../reading_list/data/datasources/reading_list_remote_data_source.dart';
 import '../widgets/add_to_reading_list_dialog.dart';
 
 class BookDetailPage extends StatefulWidget {
@@ -155,11 +157,26 @@ class _BookDetailPageState extends State<BookDetailPage> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AddToReadingListDialog(book: book),
-                    );
+                  onPressed: () async {
+                    // Check if book is already in reading list
+                    final readingListDataSource =
+                        sl<ReadingListRemoteDataSource>();
+                    final isInReadingList = await readingListDataSource
+                        .checkIsInReadingList(book.bookKey ?? '');
+
+                    if (isInReadingList && mounted) {
+                      CustomSnackBar.show(
+                        context,
+                        message: 'Already in reading list',
+                        type: SnackBarType.warning,
+                      );
+                    } else if (mounted) {
+                      showDialog(
+                        context: context,
+                        builder: (context) =>
+                            AddToReadingListDialog(book: book),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.bookmark_add),
                   label: const Text('Add to Reading List'),
