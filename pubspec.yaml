@@ -58,6 +58,7 @@ dependencies:
   # Hooks for stateless widgets
   flutter_hooks: ^0.20.5
   shimmer: ^3.0.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

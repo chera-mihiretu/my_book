@@ -7,6 +7,7 @@ import '../../../../core/models/book_model.dart';
 import '../../../favorites/presentation/bloc/favorite_bloc.dart';
 import '../../../favorites/presentation/bloc/favorite_event.dart';
 import '../../../favorites/presentation/bloc/favorite_state.dart';
+import '../widgets/add_to_reading_list_dialog.dart';
 
 class BookDetailPage extends StatefulWidget {
   final String bookOLIDKey;
@@ -155,10 +156,9 @@ class _BookDetailPageState extends State<BookDetailPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    CustomSnackBar.show(
-                      context,
-                      message: 'Coming Soon',
-                      type: SnackBarType.warning,
+                    showDialog(
+                      context: context,
+                      builder: (context) => const AddToReadingListDialog(),
                     );
                   },
                   icon: const Icon(Icons.bookmark_add),
