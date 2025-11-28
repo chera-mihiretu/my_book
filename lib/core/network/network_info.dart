@@ -14,13 +14,14 @@ class NetworkInfoImpl implements NetworkInfo {
 
   @override
   Future<bool> get isConnected async {
-    // TODO: Implement connectivity check
-    throw UnimplementedError();
+    final ConnectivityResult result = await connectivity.checkConnectivity();
+    return result != ConnectivityResult.none;
   }
 
   @override
   Stream<bool> get onConnectivityChanged {
-    // TODO: Implement connectivity stream
-    throw UnimplementedError();
+    return connectivity.onConnectivityChanged.map((result) {
+      return result != ConnectivityResult.none;
+    });
   }
 }

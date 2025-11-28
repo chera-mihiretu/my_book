@@ -13,6 +13,7 @@ import 'features/books/presentation/pages/book_list_page.dart';
 import 'features/favorites/presentation/bloc/favorite_bloc.dart';
 import 'features/favorites/presentation/pages/favorites_page.dart';
 import 'features/reading_list/presentation/bloc/reading_list_bloc.dart';
+import 'features/reading_list/presentation/pages/reading_list_page.dart';
 import 'features/reading/presentation/bloc/reading_bloc.dart';
 
 import 'core/theme/app_theme.dart';
@@ -76,7 +77,7 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
-    BookListPage(),
+    ReadingListPage(),
     FavoritesPage(),
     CompletedPage(),
     AccountPage(),

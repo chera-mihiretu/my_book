@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/models/book_model.dart';
 
 abstract class ReadingListState extends Equatable {
   const ReadingListState();
@@ -12,6 +13,14 @@ class ReadingListInitial extends ReadingListState {
 
 class ReadingListLoading extends ReadingListState {
   const ReadingListLoading();
+}
+
+class ReadingListLoaded extends ReadingListState {
+  final List<BookModel> books;
+  final bool hasMore;
+  const ReadingListLoaded(this.books, {this.hasMore = true});
+  @override
+  List<Object?> get props => [books, hasMore];
 }
 
 class ReadingListSuccess extends ReadingListState {
