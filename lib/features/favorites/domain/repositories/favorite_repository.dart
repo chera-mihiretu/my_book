@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../models/favorite_model.dart';
+import '../../../../core/models/book_model.dart';
 
 abstract class FavoriteRepository {
-  Future<Either<Failure, List<FavoriteModel>>> getFavorites();
-  Future<Either<Failure, FavoriteModel>> addFavorite(String bookId);
+  Future<Either<Failure, BookModel>> addFavorite(BookModel book);
+  Future<Either<Failure, List<BookModel>>> getFavorites();
   Future<Either<Failure, void>> removeFavorite(String bookId);
 }

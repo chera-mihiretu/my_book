@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_project/features/author_detail/presentation/bloc/author_detail_bloc.dart';
+import 'package:new_project/features/books/presentation/bloc/book_detail_bloc.dart';
 import 'package:new_project/features/search/presentation/bloc/search_bloc.dart';
 import 'package:new_project/wrapper_page.dart';
 
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<ReadingBloc>()),
         BlocProvider(create: (_) => sl<SearchBloc>()),
         BlocProvider(create: (_) => sl<AuthorDetailBloc>()),
+        BlocProvider(create: (_) => sl<BookDetailBloc>()),
       ],
       child: MaterialApp(
         title: 'Book App',

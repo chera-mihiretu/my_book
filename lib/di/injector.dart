@@ -121,7 +121,7 @@ Future<void> initializeDependencies() async {
 
   // Favorites
   sl.registerLazySingleton<FavoriteRemoteDataSource>(
-    () => FavoriteRemoteDataSourceImpl(apiClient: sl()),
+    () => FavoriteRemoteDataSourceImpl(supabase: sl()),
   );
 
   sl.registerLazySingleton<FavoriteRepository>(
@@ -176,7 +176,10 @@ Future<void> initializeDependencies() async {
   );
 
   sl.registerLazySingleton<BookDetailRepository>(
-    () => BookDetailRepositoryImpl(remoteDataSource: sl()),
+    () => BookDetailRepositoryImpl(
+      remoteDataSource: sl(),
+      favoriteRemoteDataSource: sl(),
+    ),
   );
 
   sl.registerLazySingleton(() => GetBookDetailUseCase(sl()));

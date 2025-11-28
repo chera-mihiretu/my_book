@@ -24,7 +24,12 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     AddFavoriteEvent event,
     Emitter<FavoriteState> emit,
   ) async {
-    // TODO: Implement
+    emit(const FavoriteLoading());
+    final result = await favoriteRepository.addFavorite(event.book);
+    result.fold(
+      (failure) => emit(FavoriteError(failure.message)),
+      (book) => emit(const FavoriteInitial()), // Could emit success state
+    );
   }
 
   Future<void> _onRemoveFavorite(

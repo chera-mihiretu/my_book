@@ -30,7 +30,6 @@ class BookModel extends Equatable {
   final bool? publicScanB;
 
   // Detail fields (from detail API)
-  final String? description;
   final List<String>? subjects;
   final List<String>? publishers;
   final int? numberOfPages;
@@ -44,6 +43,7 @@ class BookModel extends Equatable {
   final DateTime? whenToRead;
   final int? durationToRead;
   final int? currentPage;
+  final bool favorite;
 
   const BookModel({
     this.id,
@@ -67,7 +67,6 @@ class BookModel extends Equatable {
     this.lendingEditionS,
     this.lendingIdentifierS,
     this.publicScanB,
-    this.description,
     this.subjects,
     this.publishers,
     this.numberOfPages,
@@ -79,6 +78,7 @@ class BookModel extends Equatable {
     this.whenToRead,
     this.durationToRead,
     this.currentPage,
+    this.favorite = false,
   });
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
@@ -128,20 +128,6 @@ class BookModel extends Equatable {
       return null;
     }
 
-    // Parse description from detail API (can be in excerpts or description field)
-    String? parseDescription(Map<String, dynamic> json) {
-      if (json['excerpts'] != null && json['excerpts'] is List) {
-        final excerpts = json['excerpts'] as List;
-        if (excerpts.isNotEmpty && excerpts.first is Map) {
-          return excerpts.first['text'] as String?;
-        }
-      }
-      if (json['description'] is String) {
-        return json['description'] as String;
-      }
-      return null;
-    }
-
     return BookModel(
       id: json['id'] as String?,
       userId: json['user_id'] as String?,
@@ -172,7 +158,6 @@ class BookModel extends Equatable {
       lendingEditionS: json['lending_edition_s'] as String?,
       lendingIdentifierS: json['lending_identifier_s'] as String?,
       publicScanB: json['public_scan_b'] as bool?,
-      description: parseDescription(json),
       subjects: parseSubjects(json['subjects']),
       publishers: parsePublishers(json['publishers']),
       numberOfPages: json['number_of_pages'] as int?,
@@ -190,12 +175,12 @@ class BookModel extends Equatable {
           : null,
       durationToRead: json['duration_to_read'] as int?,
       currentPage: json['current_page'] as int?,
+      favorite: json['favorite'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'user_id': userId,
       'custom': custom,
       'title': title,
@@ -216,18 +201,17 @@ class BookModel extends Equatable {
       'lending_edition_s': lendingEditionS,
       'lending_identifier_s': lendingIdentifierS,
       'public_scan_b': publicScanB,
-      'description': description,
       'subjects': subjects,
       'publishers': publishers,
       'number_of_pages': numberOfPages,
       'publish_date': publishDate,
-      'cover': coverUrls,
       'started_time': startedTime?.toIso8601String(),
       'completed': completed,
       'end_date': endDate?.toIso8601String(),
       'when_to_read': whenToRead?.toIso8601String(),
       'duration_to_read': durationToRead,
       'current_page': currentPage,
+      'favorite': favorite,
     };
   }
 
@@ -253,7 +237,6 @@ class BookModel extends Equatable {
     String? lendingEditionS,
     String? lendingIdentifierS,
     bool? publicScanB,
-    String? description,
     List<String>? subjects,
     List<String>? publishers,
     int? numberOfPages,
@@ -265,6 +248,7 @@ class BookModel extends Equatable {
     DateTime? whenToRead,
     int? durationToRead,
     int? currentPage,
+    bool? favorite,
   }) {
     return BookModel(
       id: id ?? this.id,
@@ -288,7 +272,6 @@ class BookModel extends Equatable {
       lendingEditionS: lendingEditionS ?? this.lendingEditionS,
       lendingIdentifierS: lendingIdentifierS ?? this.lendingIdentifierS,
       publicScanB: publicScanB ?? this.publicScanB,
-      description: description ?? this.description,
       subjects: subjects ?? this.subjects,
       publishers: publishers ?? this.publishers,
       numberOfPages: numberOfPages ?? this.numberOfPages,
@@ -300,6 +283,7 @@ class BookModel extends Equatable {
       whenToRead: whenToRead ?? this.whenToRead,
       durationToRead: durationToRead ?? this.durationToRead,
       currentPage: currentPage ?? this.currentPage,
+      favorite: favorite ?? this.favorite,
     );
   }
 
@@ -326,7 +310,6 @@ class BookModel extends Equatable {
     lendingEditionS,
     lendingIdentifierS,
     publicScanB,
-    description,
     subjects,
     publishers,
     numberOfPages,
@@ -338,5 +321,6 @@ class BookModel extends Equatable {
     whenToRead,
     durationToRead,
     currentPage,
+    favorite,
   ];
 }

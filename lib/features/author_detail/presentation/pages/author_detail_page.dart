@@ -4,10 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/models/author_detail_model.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/widgets/custom_loading.dart';
-import '../../../../di/injector.dart';
 import '../bloc/author_detail_bloc.dart';
 
-class AuthorDetailPage extends StatelessWidget {
+class AuthorDetailPage extends StatefulWidget {
   final String authorKey;
   final String authorName;
 
@@ -18,22 +17,31 @@ class AuthorDetailPage extends StatelessWidget {
   });
 
   @override
+  State<AuthorDetailPage> createState() => _AuthorDetailPageState();
+}
+
+class _AuthorDetailPageState extends State<AuthorDetailPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Dispatch event to load author details using existing bloc
+    context.read<AuthorDetailBloc>().add(LoadAuthorDetail(widget.authorKey));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthorDetailBloc>()..add(LoadAuthorDetail(authorKey)),
-      child: Scaffold(
-        body: BlocBuilder<AuthorDetailBloc, AuthorDetailState>(
-          builder: (context, state) {
-            if (state is AuthorDetailLoading) {
-              return _buildLoadingState();
-            } else if (state is AuthorDetailLoaded) {
-              return _buildLoadedState(context, state.authorDetail);
-            } else if (state is AuthorDetailError) {
-              return _buildErrorState(context, state.message);
-            }
-            return const SizedBox.shrink();
-          },
-        ),
+    return Scaffold(
+      body: BlocBuilder<AuthorDetailBloc, AuthorDetailState>(
+        builder: (context, state) {
+          if (state is AuthorDetailLoading) {
+            return _buildLoadingState();
+          } else if (state is AuthorDetailLoaded) {
+            return _buildLoadedState(context, state.authorDetail);
+          } else if (state is AuthorDetailError) {
+            return _buildErrorState(context, state.message);
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -146,7 +154,7 @@ class AuthorDetailPage extends StatelessWidget {
       child: Column(
         children: [
           Hero(
-            tag: 'author_${author.key ?? authorKey}',
+            tag: 'author_${author.key ?? widget.authorKey}',
             child: Container(
               width: 120,
               height: 120,

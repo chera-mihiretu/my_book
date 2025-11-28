@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/custom_loading.dart';
 import '../../../../core/widgets/custom_snackbar.dart';
-import '../../../../di/injector.dart';
 import '../bloc/book_detail_bloc.dart';
 import '../../../../core/models/book_model.dart';
+import '../../../favorites/presentation/bloc/favorite_bloc.dart';
+import '../../../favorites/presentation/bloc/favorite_event.dart';
+import '../../../favorites/presentation/bloc/favorite_state.dart';
 
-class BookDetailPage extends StatelessWidget {
+class BookDetailPage extends StatefulWidget {
   final String bookOLIDKey;
   final String title;
 
@@ -17,12 +19,42 @@ class BookDetailPage extends StatelessWidget {
   });
 
   @override
+  State<BookDetailPage> createState() => _BookDetailPageState();
+}
+
+class _BookDetailPageState extends State<BookDetailPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Dispatch event to fetch book details using existing bloc
+    context.read<BookDetailBloc>().add(FetchBookDetail(widget.bookOLIDKey));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          sl<BookDetailBloc>()..add(FetchBookDetail(bookOLIDKey)),
+    return BlocListener<FavoriteBloc, FavoriteState>(
+      listener: (context, state) {
+        if (state is FavoriteError) {
+          CustomSnackBar.show(
+            context,
+            message: state.message,
+            type: SnackBarType.error,
+          );
+        } else if (state is FavoriteInitial &&
+            state != const FavoriteInitial()) {
+          CustomSnackBar.show(
+            context,
+            message: 'Added to favorites!',
+            type: SnackBarType.success,
+          );
+        }
+      },
       child: Scaffold(
-        appBar: AppBar(title: Text(title), centerTitle: true, elevation: 0),
+        appBar: AppBar(
+          title: Text(widget.title),
+          centerTitle: true,
+          elevation: 0,
+        ),
         body: BlocBuilder<BookDetailBloc, BookDetailState>(
           builder: (context, state) {
             if (state is BookDetailLoading) {
@@ -141,13 +173,12 @@ class BookDetailPage extends StatelessWidget {
                 ),
                 child: IconButton(
                   onPressed: () {
-                    CustomSnackBar.show(
-                      context,
-                      message: 'Coming Soon',
-                      type: SnackBarType.warning,
-                    );
+                    context.read<FavoriteBloc>().add(AddFavoriteEvent(book));
                   },
-                  icon: const Icon(Icons.favorite_border),
+                  icon: Icon(
+                    book.favorite ? Icons.favorite : Icons.favorite_border,
+                    color: book.favorite ? Colors.red : null,
+                  ),
                   iconSize: 28,
                   padding: const EdgeInsets.all(16),
                 ),
@@ -156,22 +187,6 @@ class BookDetailPage extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-
-          // Description
-          if (book.description != null) ...[
-            Text(
-              'Description',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              book.description!,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-          ],
 
           // Book Info
           _buildInfoRow(context, 'Pages', book.numberOfPages?.toString()),
