@@ -45,4 +45,16 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> removeFavoriteByKey(String bookKey) async {
+    try {
+      await remoteDataSource.removeFavoriteByKey(bookKey);
+      return const Right(null);
+    } on ServerException {
+      return Left(ServerFailure('Failed to remove favorite'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

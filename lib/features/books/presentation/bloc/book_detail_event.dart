@@ -15,3 +15,12 @@ class FetchBookDetail extends BookDetailEvent {
   @override
   List<Object> get props => [bookOLIDKey];
 }
+
+class UpdateBookFavoriteStatus extends BookDetailEvent {
+  final bool isFavorite;
+
+  const UpdateBookFavoriteStatus(this.isFavorite);
+
+  @override
+  List<Object> get props => [isFavorite];
+}

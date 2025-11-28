@@ -40,12 +40,15 @@ class _BookDetailPageState extends State<BookDetailPage> {
             message: state.message,
             type: SnackBarType.error,
           );
-        } else if (state is FavoriteInitial &&
-            state != const FavoriteInitial()) {
+        } else if (state is FavoriteSuccess) {
           CustomSnackBar.show(
             context,
-            message: 'Added to favorites!',
+            message: state.message,
             type: SnackBarType.success,
+          );
+          // Update the book detail bloc with the new favorite status
+          context.read<BookDetailBloc>().add(
+            UpdateBookFavoriteStatus(state.isFavorite),
           );
         }
       },
@@ -167,20 +170,31 @@ class _BookDetailPageState extends State<BookDetailPage> {
               ),
               const SizedBox(width: 16),
               Container(
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: IconButton(
-                  onPressed: () {
-                    context.read<FavoriteBloc>().add(AddFavoriteEvent(book));
+                child: BlocBuilder<FavoriteBloc, FavoriteState>(
+                  builder: (context, state) {
+                    if (state is FavoriteLoading) {
+                      return Center(child: CustomLoading.inline(size: 24));
+                    }
+                    return IconButton(
+                      onPressed: () {
+                        context.read<FavoriteBloc>().add(
+                          ToggleFavoriteEvent(book),
+                        );
+                      },
+                      icon: Icon(
+                        book.favorite ? Icons.favorite : Icons.favorite_border,
+                        color: book.favorite ? Colors.red : null,
+                      ),
+                      iconSize: 28,
+                      padding: const EdgeInsets.all(16),
+                    );
                   },
-                  icon: Icon(
-                    book.favorite ? Icons.favorite : Icons.favorite_border,
-                    color: book.favorite ? Colors.red : null,
-                  ),
-                  iconSize: 28,
-                  padding: const EdgeInsets.all(16),
                 ),
               ),
             ],

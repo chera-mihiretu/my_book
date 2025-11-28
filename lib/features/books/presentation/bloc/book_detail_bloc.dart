@@ -12,6 +12,7 @@ class BookDetailBloc extends Bloc<BookDetailEvent, BookDetailState> {
   BookDetailBloc({required this.getBookDetailUseCase})
     : super(BookDetailInitial()) {
     on<FetchBookDetail>(_onFetchBookDetail);
+    on<UpdateBookFavoriteStatus>(_onUpdateBookFavoriteStatus);
   }
 
   Future<void> _onFetchBookDetail(
@@ -24,5 +25,19 @@ class BookDetailBloc extends Bloc<BookDetailEvent, BookDetailState> {
       (failure) => emit(BookDetailError(message: failure.message)),
       (bookDetail) => emit(BookDetailLoaded(bookDetail: bookDetail)),
     );
+  }
+
+  void _onUpdateBookFavoriteStatus(
+    UpdateBookFavoriteStatus event,
+    Emitter<BookDetailState> emit,
+  ) {
+    if (state is BookDetailLoaded) {
+      final currentBook = (state as BookDetailLoaded).bookDetail;
+      emit(
+        BookDetailLoaded(
+          bookDetail: currentBook.copyWith(favorite: event.isFavorite),
+        ),
+      );
+    }
   }
 }

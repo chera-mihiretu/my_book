@@ -24,3 +24,10 @@ class RemoveFavoriteEvent extends FavoriteEvent {
   @override
   List<Object?> get props => [bookId];
 }
+
+class ToggleFavoriteEvent extends FavoriteEvent {
+  final BookModel book;
+  const ToggleFavoriteEvent(this.book);
+  @override
+  List<Object?> get props => [book];
+}

@@ -8,34 +8,43 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
 
   FavoriteBloc({required this.favoriteRepository})
     : super(const FavoriteInitial()) {
-    on<LoadFavoritesEvent>(_onLoadFavorites);
-    on<AddFavoriteEvent>(_onAddFavorite);
-    on<RemoveFavoriteEvent>(_onRemoveFavorite);
+    on<ToggleFavoriteEvent>(_onToggleFavorite);
   }
 
-  Future<void> _onLoadFavorites(
-    LoadFavoritesEvent event,
-    Emitter<FavoriteState> emit,
-  ) async {
-    // TODO: Implement
-  }
-
-  Future<void> _onAddFavorite(
-    AddFavoriteEvent event,
+  Future<void> _onToggleFavorite(
+    ToggleFavoriteEvent event,
     Emitter<FavoriteState> emit,
   ) async {
     emit(const FavoriteLoading());
-    final result = await favoriteRepository.addFavorite(event.book);
-    result.fold(
-      (failure) => emit(FavoriteError(failure.message)),
-      (book) => emit(const FavoriteInitial()), // Could emit success state
-    );
-  }
 
-  Future<void> _onRemoveFavorite(
-    RemoveFavoriteEvent event,
-    Emitter<FavoriteState> emit,
-  ) async {
-    // TODO: Implement
+    if (event.book.favorite) {
+      // Remove from favorites
+      final result = await favoriteRepository.removeFavoriteByKey(
+        event.book.bookKey ?? '',
+      );
+
+      result.fold(
+        (failure) => emit(FavoriteError(failure.message)),
+        (_) => emit(
+          const FavoriteSuccess(
+            message: 'Removed from favorites',
+            isFavorite: false,
+          ),
+        ),
+      );
+    } else {
+      // Add to favorites
+      final result = await favoriteRepository.addFavorite(event.book);
+
+      result.fold(
+        (failure) => emit(FavoriteError(failure.message)),
+        (book) => emit(
+          const FavoriteSuccess(
+            message: 'Added to favorites!',
+            isFavorite: true,
+          ),
+        ),
+      );
+    }
   }
 }

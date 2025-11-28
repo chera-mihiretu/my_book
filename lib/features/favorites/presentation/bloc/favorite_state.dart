@@ -28,3 +28,11 @@ class FavoriteError extends FavoriteState {
   @override
   List<Object?> get props => [message];
 }
+
+class FavoriteSuccess extends FavoriteState {
+  final String message;
+  final bool isFavorite;
+  const FavoriteSuccess({required this.message, required this.isFavorite});
+  @override
+  List<Object?> get props => [message, isFavorite];
+}

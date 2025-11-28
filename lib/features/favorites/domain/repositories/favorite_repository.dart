@@ -6,4 +6,5 @@ abstract class FavoriteRepository {
   Future<Either<Failure, BookModel>> addFavorite(BookModel book);
   Future<Either<Failure, List<BookModel>>> getFavorites();
   Future<Either<Failure, void>> removeFavorite(String bookId);
+  Future<Either<Failure, void>> removeFavoriteByKey(String bookKey);
 }

@@ -7,6 +7,7 @@ abstract class FavoriteRemoteDataSource {
   Future<List<BookModel>> getFavorites();
   Future<void> removeFavorite(String bookId);
   Future<bool> checkIsFavorite(String bookKey);
+  Future<void> removeFavoriteByKey(String bookKey);
 }
 
 class FavoriteRemoteDataSourceImpl implements FavoriteRemoteDataSource {
@@ -23,17 +24,24 @@ class FavoriteRemoteDataSourceImpl implements FavoriteRemoteDataSource {
         throw ServerException();
       }
 
-      // Check if a favorite with the same book_key already exists
-      final existingFavorites = await supabase.client
+      // Check if any book record with the same book_key already exists
+      final existingBooks = await supabase.client
           .from('books')
           .select()
           .eq('user_id', userId)
-          .eq('book_key', book.bookKey ?? '-----')
-          .eq('favorite', true);
+          .eq('book_key', book.bookKey ?? '-----');
 
-      // If a favorite already exists, return the existing one
-      if (existingFavorites.isNotEmpty) {
-        return BookModel.fromJson(existingFavorites.first);
+      if (existingBooks.isNotEmpty) {
+        // If record exists, update favorite to true
+        final existingBook = existingBooks.first;
+        final response = await supabase.client
+            .from('books')
+            .update({'favorite': true})
+            .eq('id', existingBook['id'])
+            .select()
+            .single();
+
+        return BookModel.fromJson(response);
       }
 
       // Create a copy of the book with favorite = true and userId set
@@ -113,6 +121,24 @@ class FavoriteRemoteDataSourceImpl implements FavoriteRemoteDataSource {
       return response.isNotEmpty;
     } catch (e) {
       return false;
+    }
+  }
+
+  @override
+  Future<void> removeFavoriteByKey(String bookKey) async {
+    try {
+      final userId = supabase.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw ServerException();
+      }
+
+      await supabase.client
+          .from('books')
+          .update({'favorite': false})
+          .eq('book_key', bookKey)
+          .eq('user_id', userId);
+    } catch (e) {
+      throw ServerException();
     }
   }
 }
