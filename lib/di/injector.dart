@@ -29,6 +29,13 @@ import '../features/favorites/data/repositories/favorite_repository_impl.dart';
 import '../features/favorites/domain/repositories/favorite_repository.dart';
 import '../features/favorites/presentation/bloc/favorite_bloc.dart';
 
+// Reading List
+import '../features/reading_list/data/datasources/reading_list_remote_data_source.dart';
+import '../features/reading_list/data/repositories/reading_list_repository_impl.dart';
+import '../features/reading_list/domain/repositories/reading_list_repository.dart';
+import '../features/reading_list/domain/usecases/add_to_reading_list_usecase.dart';
+import '../features/reading_list/presentation/bloc/reading_list_bloc.dart';
+
 // Reading
 import '../features/reading/data/datasources/reading_remote_data_source.dart';
 import '../features/reading/data/repositories/reading_repository_impl.dart';
@@ -129,6 +136,21 @@ Future<void> initializeDependencies() async {
   );
 
   sl.registerFactory(() => FavoriteBloc(favoriteRepository: sl()));
+
+  // Reading List
+  sl.registerLazySingleton<ReadingListRemoteDataSource>(
+    () => ReadingListRemoteDataSourceImpl(supabase: sl()),
+  );
+
+  sl.registerLazySingleton<ReadingListRepository>(
+    () => ReadingListRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<AddToReadingListUseCase>(
+    () => AddToReadingListUseCase(sl()),
+  );
+
+  sl.registerFactory(() => ReadingListBloc(addToReadingListUseCase: sl()));
 
   // Reading
   sl.registerLazySingleton<ReadingRemoteDataSource>(

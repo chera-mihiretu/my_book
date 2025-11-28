@@ -171,11 +171,22 @@ class BookModel extends Equatable {
       endDate: json['end_date'] != null
           ? DateTime.tryParse(json['end_date'] as String)
           : null,
-      whenToRead: json['when_to_read'] != null
-          ? (json['when_to_read'] as List<dynamic>)
-                .map((e) => TimeOfDay.fromDateTime(DateTime.parse(e)))
-                .toList()
-          : null,
+      whenToRead: (json['when_to_read'] as List<dynamic>?)
+          ?.map((e) {
+            if (e is String) {
+              final parts = e.split(':');
+              if (parts.length >= 2) {
+                final hour = int.tryParse(parts[0]);
+                final minute = int.tryParse(parts[1]);
+                if (hour != null && minute != null) {
+                  return TimeOfDay(hour: hour, minute: minute);
+                }
+              }
+            }
+            return null;
+          })
+          .whereType<TimeOfDay>()
+          .toList(),
       durationToRead: json['duration_to_read'] as int?,
       currentPage: json['current_page'] as int?,
       favorite: json['favorite'] as bool? ?? false,

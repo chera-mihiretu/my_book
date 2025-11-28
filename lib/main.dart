@@ -12,6 +12,7 @@ import 'features/books/presentation/bloc/book_bloc.dart';
 import 'features/books/presentation/pages/book_list_page.dart';
 import 'features/favorites/presentation/bloc/favorite_bloc.dart';
 import 'features/favorites/presentation/pages/favorites_page.dart';
+import 'features/reading_list/presentation/bloc/reading_list_bloc.dart';
 import 'features/reading/presentation/bloc/reading_bloc.dart';
 
 import 'core/theme/app_theme.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<AuthBloc>()),
         BlocProvider(create: (_) => sl<BookBloc>()),
         BlocProvider(create: (_) => sl<FavoriteBloc>()),
+        BlocProvider(create: (_) => sl<ReadingListBloc>()),
         BlocProvider(create: (_) => sl<ReadingBloc>()),
         BlocProvider(create: (_) => sl<SearchBloc>()),
         BlocProvider(create: (_) => sl<AuthorDetailBloc>()),

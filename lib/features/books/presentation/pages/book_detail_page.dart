@@ -158,7 +158,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
                   onPressed: () {
                     showDialog(
                       context: context,
-                      builder: (context) => const AddToReadingListDialog(),
+                      builder: (context) => AddToReadingListDialog(book: book),
                     );
                   },
                   icon: const Icon(Icons.bookmark_add),
