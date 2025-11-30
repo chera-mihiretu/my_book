@@ -41,6 +41,7 @@ class BookModel extends Equatable {
   final DateTime? startedTime;
   final bool completed;
   final DateTime? endDate;
+  final DateTime? lastRead;
   final List<TimeOfDay>? whenToRead;
   final int? durationToRead;
   final int? currentPage;
@@ -67,6 +68,7 @@ class BookModel extends Equatable {
     this.language,
     this.lendingEditionS,
     this.lendingIdentifierS,
+    this.lastRead,
     this.publicScanB,
     this.subjects,
     this.publishers,
@@ -190,6 +192,9 @@ class BookModel extends Equatable {
       durationToRead: json['duration_to_read'] as int?,
       currentPage: json['current_page'] as int?,
       favorite: json['favorite'] as bool? ?? false,
+      lastRead: json['last_read'] != null
+          ? DateTime.tryParse(json['last_read'] as String)
+          : null,
     );
   }
 
@@ -226,6 +231,7 @@ class BookModel extends Equatable {
       'duration_to_read': durationToRead,
       'current_page': currentPage,
       'favorite': favorite,
+      'last_read': lastRead?.toIso8601String(),
     };
   }
 
@@ -263,6 +269,7 @@ class BookModel extends Equatable {
     int? durationToRead,
     int? currentPage,
     bool? favorite,
+    DateTime? lastRead,
   }) {
     return BookModel(
       id: id ?? this.id,
@@ -298,6 +305,7 @@ class BookModel extends Equatable {
       durationToRead: durationToRead ?? this.durationToRead,
       currentPage: currentPage ?? this.currentPage,
       favorite: favorite ?? this.favorite,
+      lastRead: lastRead ?? this.lastRead,
     );
   }
 
@@ -336,5 +344,6 @@ class BookModel extends Equatable {
     durationToRead,
     currentPage,
     favorite,
+    lastRead,
   ];
 }
