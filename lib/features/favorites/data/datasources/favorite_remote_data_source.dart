@@ -3,11 +3,10 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/models/book_model.dart';
 
 abstract class FavoriteRemoteDataSource {
-  Future<BookModel> addFavorite(BookModel book);
-  Future<List<BookModel>> getFavorites();
-  Future<void> removeFavorite(String bookId);
-  Future<bool> checkIsFavorite(String bookKey);
+  Future<void> addFavorite(BookModel book);
   Future<void> removeFavoriteByKey(String bookKey);
+  Future<bool> checkIsFavorite(String bookKey);
+  Future<List<BookModel>> getFavorites({int limit = 20, int offset = 0});
 }
 
 class FavoriteRemoteDataSourceImpl implements FavoriteRemoteDataSource {
@@ -64,7 +63,7 @@ class FavoriteRemoteDataSourceImpl implements FavoriteRemoteDataSource {
   }
 
   @override
-  Future<List<BookModel>> getFavorites() async {
+  Future<List<BookModel>> getFavorites({int limit = 20, int offset = 0}) async {
     try {
       final userId = supabase.client.auth.currentUser?.id;
       if (userId == null) {
@@ -75,11 +74,10 @@ class FavoriteRemoteDataSourceImpl implements FavoriteRemoteDataSource {
           .from('books')
           .select()
           .eq('user_id', userId)
-          .eq('favorite', true);
+          .eq('favorite', true)
+          .range(offset, offset + limit - 1);
 
-      return (response as List)
-          .map((json) => BookModel.fromJson(json))
-          .toList();
+      return (response as List).map((e) => BookModel.fromJson(e)).toList();
     } catch (e) {
       throw ServerException();
     }

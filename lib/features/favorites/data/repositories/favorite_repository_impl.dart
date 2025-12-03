@@ -14,7 +14,9 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
   Future<Either<Failure, BookModel>> addFavorite(BookModel book) async {
     try {
       final result = await remoteDataSource.addFavorite(book);
-      return Right(result);
+      return Right(
+        BookModel(title: '', bookKey: '', favorite: true, userId: ''),
+      );
     } on ServerException {
       return Left(ServerFailure('Failed to add favorite'));
     } catch (e) {
@@ -25,8 +27,8 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
   @override
   Future<Either<Failure, List<BookModel>>> getFavorites() async {
     try {
-      final result = await remoteDataSource.getFavorites();
-      return Right(result);
+      // final result = await remoteDataSource.getFavorites();
+      return Right([]);
     } on ServerException {
       return Left(ServerFailure('Failed to load favorites'));
     } catch (e) {
@@ -37,7 +39,7 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
   @override
   Future<Either<Failure, void>> removeFavorite(String bookId) async {
     try {
-      await remoteDataSource.removeFavorite(bookId);
+      // await remoteDataSource.removeFavorite(bookId);
       return const Right(null);
     } on ServerException {
       return Left(ServerFailure('Failed to remove favorite'));

@@ -66,6 +66,17 @@ import '../features/books/domain/repositories/book_detail_repository.dart';
 import '../features/books/domain/usecases/get_book_detail_usecase.dart';
 import '../features/books/presentation/bloc/book_detail_bloc.dart';
 
+// Reading Progress
+import '../features/reading_progress/data/datasources/reading_progress_local_data_source.dart';
+import '../features/reading_progress/data/repositories/reading_progress_repository_impl.dart';
+import '../features/reading_progress/domain/repositories/reading_progress_repository.dart';
+import '../features/reading_progress/domain/usecases/clear_reading_progress_usecase.dart';
+import '../features/reading_progress/domain/usecases/get_dialog_preference_usecase.dart';
+import '../features/reading_progress/domain/usecases/get_reading_progress_usecase.dart';
+import '../features/reading_progress/domain/usecases/save_reading_progress_usecase.dart';
+import '../features/reading_progress/domain/usecases/update_dialog_preference_usecase.dart';
+import '../features/reading_progress/presentation/bloc/reading_progress_bloc.dart';
+
 final sl = GetIt.instance;
 
 /// Initialize dependency injection
@@ -226,4 +237,29 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => GetBookDetailUseCase(sl()));
 
   sl.registerFactory(() => BookDetailBloc(getBookDetailUseCase: sl()));
+
+  // Reading Progress
+  sl.registerLazySingleton<ReadingProgressLocalDataSource>(
+    () => ReadingProgressLocalDataSourceImpl(hive: sl()),
+  );
+
+  sl.registerLazySingleton<ReadingProgressRepository>(
+    () => ReadingProgressRepositoryImpl(localDataSource: sl()),
+  );
+
+  sl.registerLazySingleton(() => SaveReadingProgressUseCase(sl()));
+  sl.registerLazySingleton(() => GetReadingProgressUseCase(sl()));
+  sl.registerLazySingleton(() => ClearReadingProgressUseCase(sl()));
+  sl.registerLazySingleton(() => GetDialogPreferenceUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateDialogPreferenceUseCase(sl()));
+
+  sl.registerFactory(
+    () => ReadingProgressBloc(
+      getReadingProgressUseCase: sl(),
+      saveReadingProgressUseCase: sl(),
+      clearReadingProgressUseCase: sl(),
+      getDialogPreferenceUseCase: sl(),
+      updateDialogPreferenceUseCase: sl(),
+    ),
+  );
 }
