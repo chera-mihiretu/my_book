@@ -67,6 +67,7 @@ class ReadingListRemoteDataSourceImpl implements ReadingListRemoteDataSource {
         userId: userId,
         completed: false,
         endDate: null,
+        lastRead: DateTime.now(),
       );
 
       // Convert to JSON and merge with reading list data
