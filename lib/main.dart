@@ -9,12 +9,12 @@ import 'di/injector.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/books/presentation/bloc/book_bloc.dart';
-import 'features/books/presentation/pages/book_list_page.dart';
 import 'features/favorites/presentation/bloc/favorite_bloc.dart';
 import 'features/favorites/presentation/pages/favorites_page.dart';
 import 'features/reading_list/presentation/bloc/reading_list_bloc.dart';
 import 'features/reading_list/presentation/pages/reading_list_page.dart';
 import 'features/reading/presentation/bloc/reading_bloc.dart';
+import 'features/reading_progress/presentation/bloc/reading_progress_bloc.dart';
 
 import 'core/theme/app_theme.dart';
 import 'features/design_system/pages/colors_page.dart';
@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<SearchBloc>()),
         BlocProvider(create: (_) => sl<AuthorDetailBloc>()),
         BlocProvider(create: (_) => sl<BookDetailBloc>()),
+        BlocProvider(create: (_) => sl<ReadingProgressBloc>()),
       ],
       child: MaterialApp(
         title: 'Book App',
