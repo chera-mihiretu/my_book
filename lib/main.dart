@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_project/features/author_detail/presentation/bloc/author_detail_bloc.dart';
 import 'package:new_project/features/books/presentation/bloc/book_detail_bloc.dart';
+import 'package:new_project/features/completed/presentation/bloc/completed_bloc.dart';
+import 'package:new_project/features/notification_settings/presentation/bloc/notification_bloc.dart';
 import 'package:new_project/features/search/presentation/bloc/search_bloc.dart';
 import 'package:new_project/wrapper_page.dart';
 
@@ -48,6 +50,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<AuthorDetailBloc>()),
         BlocProvider(create: (_) => sl<BookDetailBloc>()),
         BlocProvider(create: (_) => sl<ReadingProgressBloc>()),
+        BlocProvider(create: (_) => sl<CompletedBloc>()),
+        BlocProvider(create: (_) => sl<NotificationBloc>()),
       ],
       child: MaterialApp(
         title: 'Book App',

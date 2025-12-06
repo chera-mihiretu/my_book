@@ -24,10 +24,28 @@ import '../features/books/domain/repositories/book_repository.dart';
 import '../features/books/presentation/bloc/book_bloc.dart';
 
 // Favorites
+import '../features/favorites/data/datasources/favorite_local_data_source.dart';
 import '../features/favorites/data/datasources/favorite_remote_data_source.dart';
 import '../features/favorites/data/repositories/favorite_repository_impl.dart';
 import '../features/favorites/domain/repositories/favorite_repository.dart';
+import '../features/favorites/domain/usecases/get_favorites_usecase.dart';
 import '../features/favorites/presentation/bloc/favorite_bloc.dart';
+
+// Completed
+import '../features/completed/data/datasources/completed_local_data_source.dart';
+import '../features/completed/data/datasources/completed_remote_data_source.dart';
+import '../features/completed/data/repositories/completed_repository_impl.dart';
+import '../features/completed/domain/repositories/completed_repository.dart';
+import '../features/completed/domain/usecases/get_completed_books_usecase.dart';
+import '../features/completed/presentation/bloc/completed_bloc.dart';
+
+// Notification Settings
+import '../features/notification_settings/data/datasources/notification_remote_data_source.dart';
+import '../features/notification_settings/data/repositories/notification_repository_impl.dart';
+import '../features/notification_settings/domain/repositories/notification_repository.dart';
+import '../features/notification_settings/domain/usecases/get_notification_settings_usecase.dart';
+import '../features/notification_settings/domain/usecases/update_notification_settings_usecase.dart';
+import '../features/notification_settings/presentation/bloc/notification_bloc.dart';
 
 // Reading List
 import '../features/reading_list/data/datasources/reading_list_remote_data_source.dart';
@@ -36,6 +54,7 @@ import '../features/reading_list/data/repositories/reading_list_repository_impl.
 import '../features/reading_list/domain/repositories/reading_list_repository.dart';
 import '../features/reading_list/domain/usecases/add_to_reading_list_usecase.dart';
 import '../features/reading_list/domain/usecases/get_reading_list_usecase.dart';
+import '../features/reading_list/domain/usecases/update_current_page_usecase.dart';
 import '../features/reading_list/presentation/bloc/reading_list_bloc.dart';
 
 // Reading
@@ -144,11 +163,72 @@ Future<void> initializeDependencies() async {
     () => FavoriteRemoteDataSourceImpl(supabase: sl()),
   );
 
-  sl.registerLazySingleton<FavoriteRepository>(
-    () => FavoriteRepositoryImpl(remoteDataSource: sl()),
+  sl.registerLazySingleton<FavoriteLocalDataSource>(
+    () => FavoriteLocalDataSourceImpl(hive: sl()),
   );
 
-  sl.registerFactory(() => FavoriteBloc(favoriteRepository: sl()));
+  sl.registerLazySingleton<FavoriteRepository>(
+    () => FavoriteRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetFavoritesUseCase>(
+    () => GetFavoritesUseCase(sl()),
+  );
+
+  sl.registerFactory(
+    () => FavoriteBloc(favoriteRepository: sl(), getFavoritesUseCase: sl()),
+  );
+
+  // Completed
+  sl.registerLazySingleton<CompletedRemoteDataSource>(
+    () => CompletedRemoteDataSourceImpl(supabase: sl()),
+  );
+
+  sl.registerLazySingleton<CompletedLocalDataSource>(
+    () => CompletedLocalDataSourceImpl(hive: sl()),
+  );
+
+  sl.registerLazySingleton<CompletedRepository>(
+    () => CompletedRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetCompletedBooksUseCase>(
+    () => GetCompletedBooksUseCase(sl()),
+  );
+
+  sl.registerFactory(() => CompletedBloc(getCompletedBooksUseCase: sl()));
+
+  // Notification Settings
+  sl.registerLazySingleton<NotificationRemoteDataSource>(
+    () => NotificationRemoteDataSourceImpl(supabase: sl()),
+  );
+
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<GetNotificationSettingsUseCase>(
+    () => GetNotificationSettingsUseCase(sl()),
+  );
+
+  sl.registerLazySingleton<UpdateNotificationSettingsUseCase>(
+    () => UpdateNotificationSettingsUseCase(sl()),
+  );
+
+  sl.registerFactory(
+    () => NotificationBloc(
+      getNotificationSettingsUseCase: sl(),
+      updateNotificationSettingsUseCase: sl(),
+    ),
+  );
 
   // Reading List
   sl.registerLazySingleton<ReadingListRemoteDataSource>(
@@ -175,10 +255,13 @@ Future<void> initializeDependencies() async {
     () => GetReadingListUseCase(sl()),
   );
 
+  sl.registerLazySingleton(() => UpdateCurrentPageUseCase(sl()));
+
   sl.registerFactory(
     () => ReadingListBloc(
       addToReadingListUseCase: sl(),
       getReadingListUseCase: sl(),
+      updateCurrentPageUseCase: sl(),
     ),
   );
 
