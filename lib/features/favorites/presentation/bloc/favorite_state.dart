@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/models/favorite_model.dart';
+import '../../../../core/models/book_model.dart';
 
 abstract class FavoriteState extends Equatable {
   const FavoriteState();
@@ -16,7 +16,7 @@ class FavoriteLoading extends FavoriteState {
 }
 
 class FavoritesLoaded extends FavoriteState {
-  final List<FavoriteModel> favorites;
+  final List<BookModel> favorites;
   const FavoritesLoaded(this.favorites);
   @override
   List<Object?> get props => [favorites];

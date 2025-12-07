@@ -1,14 +1,33 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_project/features/favorites/domain/repositories/favorite_repository.dart';
+import 'package:new_project/features/favorites/domain/usecases/get_favorites_usecase.dart';
 import 'favorite_event.dart';
 import 'favorite_state.dart';
 
 class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
   final FavoriteRepository favoriteRepository;
+  final GetFavoritesUseCase getFavoritesUseCase;
 
-  FavoriteBloc({required this.favoriteRepository})
-    : super(const FavoriteInitial()) {
+  FavoriteBloc({
+    required this.favoriteRepository,
+    required this.getFavoritesUseCase,
+  }) : super(const FavoriteInitial()) {
     on<ToggleFavoriteEvent>(_onToggleFavorite);
+    on<LoadFavoritesEvent>(_onLoadFavorites);
+  }
+
+  Future<void> _onLoadFavorites(
+    LoadFavoritesEvent event,
+    Emitter<FavoriteState> emit,
+  ) async {
+    emit(const FavoriteLoading());
+
+    final result = await getFavoritesUseCase();
+
+    result.fold(
+      (failure) => emit(FavoriteError(failure.message)),
+      (favorites) => emit(FavoritesLoaded(favorites)),
+    );
   }
 
   Future<void> _onToggleFavorite(

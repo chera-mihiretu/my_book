@@ -3,7 +3,7 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/models/book_model.dart';
 
 abstract class FavoriteRemoteDataSource {
-  Future<void> addFavorite(BookModel book);
+  Future<BookModel> addFavorite(BookModel book);
   Future<void> removeFavoriteByKey(String bookKey);
   Future<bool> checkIsFavorite(String bookKey);
   Future<List<BookModel>> getFavorites({int limit = 20, int offset = 0});

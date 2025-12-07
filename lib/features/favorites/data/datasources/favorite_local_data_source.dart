@@ -12,7 +12,7 @@ class FavoriteLocalDataSourceImpl implements FavoriteLocalDataSource {
   final HiveInterface hive;
   static const String _boxName = 'favorites_cache';
   static const String _cacheKey = 'favorites';
-  static const int _maxCacheSize = 20;
+  static const int _maxCacheSize = 10;
 
   FavoriteLocalDataSourceImpl({required this.hive});
 
