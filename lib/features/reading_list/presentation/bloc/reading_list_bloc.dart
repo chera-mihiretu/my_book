@@ -2,19 +2,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import '../../domain/usecases/add_to_reading_list_usecase.dart';
 import '../../domain/usecases/get_reading_list_usecase.dart';
+import '../../domain/usecases/update_current_page_usecase.dart';
 import 'reading_list_event.dart';
 import 'reading_list_state.dart';
 
 class ReadingListBloc extends Bloc<ReadingListEvent, ReadingListState> {
   final AddToReadingListUseCase addToReadingListUseCase;
   final GetReadingListUseCase getReadingListUseCase;
+  final UpdateCurrentPageUseCase updateCurrentPageUseCase;
 
   ReadingListBloc({
     required this.addToReadingListUseCase,
     required this.getReadingListUseCase,
+    required this.updateCurrentPageUseCase,
   }) : super(const ReadingListInitial()) {
     on<AddToReadingListEvent>(_onAddToReadingList);
     on<LoadReadingListEvent>(_onLoadReadingList);
+    on<UpdateCurrentPageEvent>(_onUpdateCurrentPage);
   }
 
   Future<void> _onAddToReadingList(
@@ -45,6 +49,30 @@ class ReadingListBloc extends Bloc<ReadingListEvent, ReadingListState> {
         ReadingListLoaded(sortedBooks, hasMore: books.length >= event.limit),
       );
     });
+  }
+
+  Future<void> _onUpdateCurrentPage(
+    UpdateCurrentPageEvent event,
+    Emitter<ReadingListState> emit,
+  ) async {
+    // We don't want to show full loading screen for this action, maybe
+    // But for now let's keep it simple. If we emit loading, the UI might flicker if it listens to it.
+    // However, the detail page should probably only listen for Success/error for this specific event.
+    // Ideally, we yield a specific "updating" state, but Loading is fine if generic.
+    // Let's create a custom "Updating" state? Or just rely on Future.
+    // For now, emit nothing (optimistic) or emit Loading.
+    // Given the request, celebration follows submission.
+    // We can emit ReadingListUpdateSuccess(book) when done.
+
+    final result = await updateCurrentPageUseCase(
+      event.bookKey,
+      event.newPage,
+      isCompleted: event.isCompleted,
+    );
+    result.fold(
+      (failure) => emit(ReadingListError(failure.message)),
+      (book) => emit(ReadingListUpdateSuccess(book)),
+    );
   }
 
   List<T> _sortByUpcomingReadTime<T>(List<T> books) {

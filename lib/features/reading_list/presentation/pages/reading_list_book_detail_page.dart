@@ -4,13 +4,15 @@ import '../../../../core/models/book_model.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/widgets/custom_loading.dart';
 import '../../../../core/widgets/custom_snackbar.dart';
-import '../../../books/data/datasources/book_detail_remote_data_source.dart';
+import '../../../books/presentation/bloc/book_detail_bloc.dart';
 import '../../../reading_progress/presentation/bloc/reading_progress_bloc.dart';
 import '../../../reading_progress/presentation/bloc/reading_progress_event.dart';
 import '../../../reading_progress/presentation/bloc/reading_progress_state.dart';
 import '../../../reading_progress/presentation/widgets/timer_info_dialog.dart';
-import '../../../../di/injector.dart';
 import '../widgets/countdown_timer_widget.dart';
+import '../bloc/reading_list_bloc.dart';
+import '../bloc/reading_list_event.dart';
+import '../bloc/reading_list_state.dart';
 
 class ReadingListBookDetailPage extends StatefulWidget {
   final BookModel book;
@@ -54,40 +56,9 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
 
     // For non-custom books, fetch additional details from Open Library
     if (widget.book.bookKey != null) {
-      setState(() {
-        _isLoadingDetails = true;
-      });
-
-      try {
-        final bookOLIDKey = widget.book.bookKey!.substring(7);
-        final dataSource = sl<BookDetailRemoteDataSource>();
-        final detailedBook = await dataSource.getBookDetail(bookOLIDKey);
-
-        // Merge the detailed book data with the existing book data
-        setState(() {
-          _detailedBook = widget.book.copyWith(
-            subjects: detailedBook.subjects ?? widget.book.subjects,
-            publishers: detailedBook.publishers ?? widget.book.publishers,
-            numberOfPages:
-                detailedBook.numberOfPages ?? widget.book.numberOfPages,
-            publishDate: detailedBook.publishDate ?? widget.book.publishDate,
-            coverUrls: detailedBook.coverUrls ?? widget.book.coverUrls,
-          );
-          _isLoadingDetails = false;
-        });
-      } catch (e) {
-        setState(() {
-          _detailedBook = widget.book;
-          _isLoadingDetails = false;
-        });
-        if (mounted) {
-          CustomSnackBar.show(
-            context,
-            message: 'Could not load additional book details',
-            type: SnackBarType.warning,
-          );
-        }
-      }
+      // Use Bloc to fetch details
+      final bookOLIDKey = widget.book.bookKey!.substring(7);
+      context.read<BookDetailBloc>().add(FetchBookDetail(bookOLIDKey));
     } else {
       setState(() {
         _detailedBook = widget.book;
@@ -168,7 +139,140 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
         message: 'Reading time completed!',
         type: SnackBarType.success,
       );
+      _showUpdatePageDialog();
     }
+  }
+
+  void _showUpdatePageDialog() {
+    final book = _detailedBook ?? widget.book;
+    final currentPage = book.currentPage ?? 0;
+    final totalPages = book.numberOfPages ?? 0;
+    final controller = TextEditingController(); // Start empty
+    String? errorText;
+    bool isCompleted = false;
+    bool showCheckbox = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Session Complete!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('What page have you reached?'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Page Number',
+                      hintText: 'Current: $currentPage',
+                      errorText: errorText,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      final page = int.tryParse(value);
+                      if (errorText != null) {
+                        setDialogState(() => errorText = null);
+                      }
+                      // Show checkbox if last page reached
+                      if (page != null && page == totalPages) {
+                        if (!showCheckbox) {
+                          setDialogState(() {
+                            showCheckbox = true;
+                            isCompleted = true; // Auto-check for convenience
+                          });
+                        }
+                      } else {
+                        if (showCheckbox) {
+                          setDialogState(() {
+                            showCheckbox = false;
+                            isCompleted = false;
+                          });
+                        }
+                      }
+                    },
+                  ),
+                  if (totalPages > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Total pages: $totalPages',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  if (showCheckbox)
+                    CheckboxListTile(
+                      title: const Text('Completed'),
+                      value: isCompleted,
+                      onChanged: (val) {
+                        setDialogState(() => isCompleted = val ?? false);
+                      },
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    // Check if valid
+                    final input = int.tryParse(controller.text);
+                    if (input == null) {
+                      setDialogState(
+                        () => errorText = 'Please enter a valid number',
+                      );
+                      return;
+                    }
+
+                    if (input <= currentPage) {
+                      setDialogState(
+                        () => errorText =
+                            'Must be greater than current page ($currentPage)',
+                      );
+                      return;
+                    }
+
+                    if (totalPages > 0 && input > totalPages) {
+                      setDialogState(
+                        () => errorText =
+                            'Must be less than or equal to total pages ($totalPages)',
+                      );
+                      return;
+                    }
+
+                    Navigator.of(context).pop();
+                    _submitPageUpdate(input, isCompleted: isCompleted);
+                  },
+                  child: const Text('Update'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _submitPageUpdate(int newPage, {bool isCompleted = false}) {
+    final bookKey = widget.book.bookKey ?? widget.book.id;
+    if (bookKey != null) {
+      context.read<ReadingListBloc>().add(
+        UpdateCurrentPageEvent(bookKey, newPage, isCompleted: isCompleted),
+      );
+    }
+  }
+
+  void _showCelebration() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return const FunCelebrationDialog();
+      },
+    );
   }
 
   @override
@@ -176,15 +280,68 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
     final theme = Theme.of(context);
     final book = _detailedBook ?? widget.book;
 
-    return BlocListener<ReadingProgressBloc, ReadingProgressState>(
-      listener: (context, state) {
-        if (state is ReadingProgressLoaded) {
-          setState(() {
-            _initialElapsedSeconds = state.progress?.elapsedSeconds ?? 0;
-            _showDialog = state.showDialog;
-          });
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ReadingProgressBloc, ReadingProgressState>(
+          listener: (context, state) {
+            if (state is ReadingProgressLoaded) {
+              setState(() {
+                _initialElapsedSeconds = state.progress?.elapsedSeconds ?? 0;
+                _showDialog = state.showDialog;
+              });
+            }
+          },
+        ),
+        BlocListener<BookDetailBloc, BookDetailState>(
+          listener: (context, state) {
+            if (state is BookDetailLoading) {
+              setState(() {
+                _isLoadingDetails = true;
+              });
+            } else if (state is BookDetailLoaded) {
+              final detailedBook = state.bookDetail;
+              setState(() {
+                _detailedBook = widget.book.copyWith(
+                  subjects: detailedBook.subjects ?? widget.book.subjects,
+                  publishers: detailedBook.publishers ?? widget.book.publishers,
+                  numberOfPages:
+                      detailedBook.numberOfPages ?? widget.book.numberOfPages,
+                  publishDate:
+                      detailedBook.publishDate ?? widget.book.publishDate,
+                  coverUrls: detailedBook.coverUrls ?? widget.book.coverUrls,
+                );
+                _isLoadingDetails = false;
+              });
+            } else if (state is BookDetailError) {
+              setState(() {
+                _detailedBook = widget.book;
+                _isLoadingDetails = false;
+              });
+              CustomSnackBar.show(
+                context,
+                message: 'Could not load additional book details',
+                type: SnackBarType.warning,
+              );
+            }
+          },
+        ),
+        BlocListener<ReadingListBloc, ReadingListState>(
+          listener: (context, state) {
+            if (state is ReadingListUpdateSuccess) {
+              setState(() {
+                _detailedBook = state.book;
+              });
+              _showCelebration();
+            } else if (state is ReadingListError) {
+              CustomSnackBar.show(
+                context,
+                message: state.message,
+                type: SnackBarType.error,
+              );
+            }
+          },
+        ),
+      ],
       child: PopScope(
         canPop: !_isTimerRunning,
         onPopInvokedWithResult: (didPop, result) async {
@@ -299,8 +456,9 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
                         const SizedBox(height: 24),
                       ],
 
-                      // Countdown Timer
-                      if (book.durationToRead != null) ...[
+                      if (book.durationToRead != null &&
+                          !book.completed &&
+                          (book.currentPage != book.numberOfPages)) ...[
                         Text(
                           'Reading Timer',
                           style: theme.textTheme.titleLarge?.copyWith(
@@ -464,7 +622,7 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
 
   Widget _buildProgressCard(BuildContext context, BookModel book) {
     final theme = Theme.of(context);
-    final progress = book.currentPage! / book.numberOfPages!;
+    final progress = (book.currentPage ?? 0) / (book.numberOfPages ?? 1);
     final percentage = (progress * 100).toStringAsFixed(0);
 
     return Card(
@@ -512,6 +670,122 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class FunCelebrationDialog extends StatefulWidget {
+  const FunCelebrationDialog({super.key});
+
+  @override
+  State<FunCelebrationDialog> createState() => _FunCelebrationDialogState();
+}
+
+class _FunCelebrationDialogState extends State<FunCelebrationDialog>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotateAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+    );
+
+    _rotateAnimation = Tween<double>(
+      begin: -0.2,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+
+    _controller.forward();
+
+    // Auto dismiss after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Transform.rotate(
+              angle: _rotateAnimation.value,
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.celebration,
+                        size: 64,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Awesome Job!',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'You updated your progress.',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

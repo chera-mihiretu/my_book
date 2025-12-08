@@ -21,3 +21,16 @@ class LoadReadingListEvent extends ReadingListEvent {
   @override
   List<Object?> get props => [limit, offset];
 }
+
+class UpdateCurrentPageEvent extends ReadingListEvent {
+  final String bookKey;
+  final int newPage;
+  final bool isCompleted;
+  const UpdateCurrentPageEvent(
+    this.bookKey,
+    this.newPage, {
+    this.isCompleted = false,
+  });
+  @override
+  List<Object?> get props => [bookKey, newPage, isCompleted];
+}

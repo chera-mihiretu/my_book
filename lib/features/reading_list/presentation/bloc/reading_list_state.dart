@@ -30,6 +30,13 @@ class ReadingListSuccess extends ReadingListState {
   List<Object?> get props => [message];
 }
 
+class ReadingListUpdateSuccess extends ReadingListState {
+  final BookModel book;
+  const ReadingListUpdateSuccess(this.book);
+  @override
+  List<Object?> get props => [book];
+}
+
 class ReadingListError extends ReadingListState {
   final String message;
   const ReadingListError(this.message);

@@ -75,4 +75,25 @@ class ReadingListRepositoryImpl implements ReadingListRepository {
       return Left(CacheFailure('Failed to load cached data'));
     }
   }
+
+  @override
+  Future<Either<Failure, BookModel>> updateCurrentPage(
+    String bookKey,
+    int newPage, {
+    bool isCompleted = false,
+  }) async {
+    try {
+      final result = await remoteDataSource.updateCurrentPage(
+        bookKey,
+        newPage,
+        isCompleted: isCompleted,
+      );
+      // Optionally update cache here if needed, or just return result
+      return Right(result);
+    } on ServerException {
+      return Left(ServerFailure('Failed to update current page'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

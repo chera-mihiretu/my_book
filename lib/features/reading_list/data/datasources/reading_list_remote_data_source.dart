@@ -6,6 +6,11 @@ abstract class ReadingListRemoteDataSource {
   Future<BookModel> addToReadingList(BookModel book);
   Future<bool> checkIsInReadingList(String bookKey);
   Future<List<BookModel>> getReadingList({int limit = 20, int offset = 0});
+  Future<BookModel> updateCurrentPage(
+    String bookKey,
+    int newPage, {
+    bool isCompleted = false,
+  });
 }
 
 class ReadingListRemoteDataSourceImpl implements ReadingListRemoteDataSource {
@@ -124,6 +129,7 @@ class ReadingListRemoteDataSourceImpl implements ReadingListRemoteDataSource {
           .from('books')
           .select()
           .eq('user_id', userId)
+          .eq('completed', false)
           .not('started_time', 'is', null)
           .not('when_to_read', 'is', null)
           .not('duration_to_read', 'is', null)
@@ -132,6 +138,42 @@ class ReadingListRemoteDataSourceImpl implements ReadingListRemoteDataSource {
       return (response as List)
           .map((json) => BookModel.fromJson(json))
           .toList();
+    } catch (e) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<BookModel> updateCurrentPage(
+    String bookKey,
+    int newPage, {
+    bool isCompleted = false,
+  }) async {
+    try {
+      final userId = supabase.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw ServerException();
+      }
+
+      final updates = {
+        'current_page': newPage,
+        'last_read': DateTime.now().toIso8601String(),
+      };
+
+      if (isCompleted) {
+        updates['completed'] = true;
+        updates['end_date'] = DateTime.now().toIso8601String();
+      }
+
+      final response = await supabase.client
+          .from('books')
+          .update(updates)
+          .eq('user_id', userId)
+          .eq('book_key', bookKey)
+          .select()
+          .single();
+
+      return BookModel.fromJson(response);
     } catch (e) {
       throw ServerException();
     }
