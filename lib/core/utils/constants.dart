@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 /// Application constants
 class AppConstants {
   // API Configuration
@@ -31,12 +29,18 @@ class AppConstants {
 class ApiEndpoints {
   static String searchBook(String book, {int page = 1, int limit = 10}) {
     String url = Uri.encodeComponent(book);
+
     return "https://openlibrary.org/search.json?q=$url&page=$page&limit=$limit";
+  }
+
+  static String authorWorks(String authorKey) {
+    return "https://openlibrary.org/authors/$authorKey/works.json?limit=100";
   }
 
   static String searchAuthor(String author, {int page = 1, int limit = 10}) {
     String url = Uri.encodeComponent(author);
-    return "https://openlibrary.org/search/authors.json?q=$url&page=$page&limit=$limit";
+
+    return "https://openlibrary.org/search/authors.json?q=$url&offset=$page&limit=$limit";
   }
 
   static String getAuthorDetail(String authorKey) {
@@ -52,13 +56,14 @@ class ApiEndpoints {
   }
 
   static String bookPhotoUrl(String bookPhotoKey) {
-    log(bookPhotoKey);
     if (bookPhotoKey.startsWith('/books/')) {
       bookPhotoKey = bookPhotoKey.substring(7, bookPhotoKey.length);
     }
-
-    log(bookPhotoKey);
     return "https://covers.openlibrary.org/b/olid/$bookPhotoKey-M.jpg";
+  }
+
+  static String coverUrl(String coverId) {
+    return "https://covers.openlibrary.org/b/id/$coverId-M.jpg";
   }
 }
 
