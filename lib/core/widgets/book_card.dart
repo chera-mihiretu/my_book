@@ -1,14 +1,18 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:new_project/core/utils/constants.dart';
 import '../models/book_model.dart';
 
 class BookCard extends StatefulWidget {
   final BookModel book;
+  final bool fromDatabase;
   final VoidCallback? onTap;
 
-  const BookCard({super.key, required this.book, this.onTap});
+  const BookCard({
+    super.key,
+    required this.book,
+    required this.fromDatabase,
+    this.onTap,
+  });
 
   @override
   State<BookCard> createState() => _BookCardState();
@@ -144,10 +148,13 @@ class _BookCardState extends State<BookCard>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (widget.book.coverI != null)
+            if ((widget.fromDatabase && widget.book.bookKey != null) ||
+                (!widget.fromDatabase && widget.book.coverEditionKey != null))
               Image.network(
                 ApiEndpoints.bookPhotoUrl(
-                  widget.book.coverEditionKey.toString(),
+                  widget.fromDatabase
+                      ? widget.book.bookKey.toString()
+                      : widget.book.coverEditionKey.toString(),
                 ),
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>

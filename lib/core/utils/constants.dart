@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 /// Application constants
 class AppConstants {
   // API Configuration
@@ -50,9 +52,12 @@ class ApiEndpoints {
   }
 
   static String bookPhotoUrl(String bookPhotoKey) {
-    if (bookPhotoKey.startsWith('OLID:')) {
-      bookPhotoKey = bookPhotoKey.substring(5);
+    log(bookPhotoKey);
+    if (bookPhotoKey.startsWith('/books/')) {
+      bookPhotoKey = bookPhotoKey.substring(7, bookPhotoKey.length);
     }
+
+    log(bookPhotoKey);
     return "https://covers.openlibrary.org/b/olid/$bookPhotoKey-M.jpg";
   }
 }
