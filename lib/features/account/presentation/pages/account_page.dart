@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:new_project/di/injector.dart';
+import 'package:new_project/features/notification_settings/presentation/widgets/notification_settings_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AccountPage extends StatelessWidget {
@@ -79,8 +80,9 @@ class AccountPage extends StatelessWidget {
             icon: Icons.notifications_none,
             title: 'Notifications',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications - Coming Soon')),
+              showDialog(
+                context: context,
+                builder: (context) => const NotificationSettingsDialog(),
               );
             },
           ),

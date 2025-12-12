@@ -1,11 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/widgets/book_card.dart';
 import '../../../../core/widgets/custom_loading.dart';
 import '../bloc/search_bloc.dart';
 import 'author_search_card.dart';
-import 'book_search_card.dart';
 import '../../../author_detail/presentation/pages/author_detail_page.dart';
 import '../../../books/presentation/pages/book_detail_page.dart';
 
@@ -74,7 +72,7 @@ class SearchResultsList extends StatelessWidget {
             ),
           );
         }
-        return BookSearchCard(
+        return BookCard(
           book: state.books[index],
           onTap: () {
             // Navigate to book details
