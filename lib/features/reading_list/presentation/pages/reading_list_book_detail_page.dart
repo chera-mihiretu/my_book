@@ -500,6 +500,13 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
                         const SizedBox(height: 24),
                       ],
 
+                      // Reading Schedule
+                      if (book.whenToRead != null &&
+                          book.whenToRead!.any((t) => t != null)) ...[
+                        _buildReadingScheduleCard(context, book),
+                        const SizedBox(height: 24),
+                      ],
+
                       // Reading Progress
                       if (book.currentPage != null &&
                           book.numberOfPages != null)
@@ -658,6 +665,63 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadingScheduleCard(BuildContext context, BookModel book) {
+    final theme = Theme.of(context);
+    final daysOfWeek = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Reading Schedule',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(7, (index) {
+              final time = book.whenToRead![index];
+              if (time == null) return const SizedBox.shrink();
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      daysOfWeek[index],
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      time.format(context),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ],
         ),
       ),
