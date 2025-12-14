@@ -6,7 +6,6 @@ class CountdownTimerWidget extends StatefulWidget {
   final int initialElapsedSeconds;
   final bool autoStart;
   final VoidCallback? onTimerComplete;
-  final VoidCallback? onStartReading;
   final VoidCallback? onTimerStart;
   final Function(int elapsedSeconds)? onProgressSave;
   final Function(bool isRunning)? onTimerRunningChanged;
@@ -17,7 +16,6 @@ class CountdownTimerWidget extends StatefulWidget {
     this.initialElapsedSeconds = 0,
     this.autoStart = false,
     this.onTimerComplete,
-    this.onStartReading,
     this.onTimerStart,
     this.onProgressSave,
     this.onTimerRunningChanged,
@@ -248,27 +246,6 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget> {
             ],
           ),
           const SizedBox(height: 24),
-
-          // Start Reading Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: widget.onStartReading,
-              icon: const Icon(Icons.menu_book),
-              label: const Text('Start Reading Now'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

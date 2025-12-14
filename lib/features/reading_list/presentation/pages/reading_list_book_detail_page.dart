@@ -123,15 +123,6 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
     }
   }
 
-  void _onStartReading() {
-    // TODO: Implement navigation to reading view or update reading status
-    CustomSnackBar.show(
-      context,
-      message: 'Starting reading session...',
-      type: SnackBarType.success,
-    );
-  }
-
   void _onTimerComplete() {
     if (mounted) {
       CustomSnackBar.show(
@@ -470,7 +461,6 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
                           durationInMinutes: book.durationToRead!,
                           initialElapsedSeconds: _initialElapsedSeconds,
                           autoStart: _initialElapsedSeconds > 0,
-                          onStartReading: _onStartReading,
                           onTimerStart: _onTimerStart,
                           onTimerComplete: _onTimerComplete,
                           onProgressSave: _saveReadingProgress,

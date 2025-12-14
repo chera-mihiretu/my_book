@@ -19,9 +19,7 @@ class ReadingListBookCard extends StatelessWidget {
     } else {
       if (book.bookKey == null) return '';
 
-      return ApiEndpoints.bookPhotoUrl(
-        book.bookKey!.substring(7, book.bookKey!.length),
-      );
+      return ApiEndpoints.bookPhotoUrl(book.bookKey!);
     }
   }
 
