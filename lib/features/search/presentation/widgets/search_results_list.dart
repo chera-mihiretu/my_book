@@ -73,6 +73,7 @@ class SearchResultsList extends StatelessWidget {
           );
         }
         return BookCard(
+          fromDatabase: false,
           book: state.books[index],
           onTap: () {
             // Navigate to book details
