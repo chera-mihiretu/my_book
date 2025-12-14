@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/book_card.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../core/widgets/custom_loading.dart';
-import '../../../books/presentation/pages/book_detail_page.dart';
+import '../../../reading_list/presentation/pages/reading_list_book_detail_page.dart';
 import '../bloc/favorite_bloc.dart';
 import '../bloc/favorite_event.dart';
 import '../bloc/favorite_state.dart';
@@ -59,19 +59,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CustomLoading.inline(size: 48),
-          const SizedBox(height: 16),
-          const Text(
-            'Loading favorites...',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    );
+    return Center(child: CustomLoading.inline());
   }
 
   Widget _buildFavoritesList(FavoritesLoaded state, BuildContext context) {
@@ -82,21 +70,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
       itemBuilder: (context, index) {
         final book = state.favorites[index];
         return BookCard(
+          fromDatabase: true,
           book: book,
           onTap: () {
-            // Navigate to book details
-            final bookOLIDKey = book.coverEditionKey;
-            if (bookOLIDKey != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookDetailPage(
-                    bookOLIDKey: bookOLIDKey,
-                    title: book.title,
-                  ),
-                ),
-              );
-            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReadingListBookDetailPage(book: book),
+              ),
+            );
           },
         );
       },

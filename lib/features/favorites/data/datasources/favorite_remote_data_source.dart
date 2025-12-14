@@ -6,6 +6,7 @@ abstract class FavoriteRemoteDataSource {
   Future<BookModel> addFavorite(BookModel book);
   Future<void> removeFavoriteByKey(String bookKey);
   Future<bool> checkIsFavorite(String bookKey);
+  Future<void> removeFavorite(String bookId);
   Future<List<BookModel>> getFavorites({int limit = 20, int offset = 0});
 }
 
