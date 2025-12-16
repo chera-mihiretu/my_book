@@ -50,6 +50,9 @@ class ApiEndpoints {
   }
 
   static String bookPhotoUrl(String bookPhotoKey) {
+    if (bookPhotoKey.startsWith('OLID:')) {
+      bookPhotoKey = bookPhotoKey.substring(5);
+    }
     return "https://covers.openlibrary.org/b/olid/$bookPhotoKey-M.jpg";
   }
 }
