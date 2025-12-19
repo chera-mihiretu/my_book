@@ -51,3 +51,23 @@ class RegistrationSuccess extends AuthState {
 class LogoutSuccess extends AuthState {
   const LogoutSuccess();
 }
+
+/// Password reset email sent state
+class PasswordResetEmailSent extends AuthState {
+  const PasswordResetEmailSent();
+}
+
+/// OTP verified state
+class OtpVerified extends AuthState {
+  const OtpVerified();
+}
+
+/// Email verified state
+class EmailVerified extends AuthState {
+  const EmailVerified();
+}
+
+/// Password updated state
+class PasswordUpdated extends AuthState {
+  const PasswordUpdated();
+}
