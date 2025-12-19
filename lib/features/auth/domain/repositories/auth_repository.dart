@@ -28,4 +28,20 @@ abstract class AuthRepository {
 
   /// Refresh authentication token
   Future<Either<Failure, void>> refreshToken();
+
+  /// Request password reset
+  Future<Either<Failure, void>> resetPassword({required String email});
+
+  /// Verify OTP
+  Future<Either<Failure, void>> verifyOtp({
+    required String email,
+    required String token,
+  });
+
+  /// Update password
+  Future<Either<Failure, void>> verifyEmail({
+    required String email,
+    required String token,
+  });
+  Future<Either<Failure, void>> updatePassword({required String password});
 }
