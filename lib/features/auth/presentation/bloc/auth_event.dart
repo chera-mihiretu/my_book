@@ -44,3 +44,37 @@ class CheckAuthEvent extends AuthEvent {
 class RefreshTokenEvent extends AuthEvent {
   const RefreshTokenEvent();
 }
+
+/// Event to request password reset
+class ForgotPasswordRequested extends AuthEvent {
+  final String email;
+  const ForgotPasswordRequested({required this.email});
+  @override
+  List<Object?> get props => [email];
+}
+
+/// Event to verify OTP
+class VerifyOtpRequested extends AuthEvent {
+  final String email;
+  final String token;
+  const VerifyOtpRequested({required this.email, required this.token});
+  @override
+  List<Object?> get props => [email, token];
+}
+
+/// Event to verify Email
+class VerifyEmailRequested extends AuthEvent {
+  final String email;
+  final String token;
+  const VerifyEmailRequested({required this.email, required this.token});
+  @override
+  List<Object?> get props => [email, token];
+}
+
+/// Event to update password
+class UpdatePasswordRequested extends AuthEvent {
+  final String password;
+  const UpdatePasswordRequested({required this.password});
+  @override
+  List<Object?> get props => [password];
+}
