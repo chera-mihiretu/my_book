@@ -13,6 +13,10 @@ abstract class AuthRemoteDataSource {
   Future<void> logout();
   Future<UserModel> getCurrentUser();
   Future<void> refreshToken();
+  Future<void> resetPassword({required String email});
+  Future<void> verifyOtp({required String email, required String token});
+  Future<void> verifyEmail({required String email, required String token});
+  Future<void> updatePassword({required String password});
 }
 
 /// Implementation of AuthRemoteDataSource
@@ -47,7 +51,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             : null,
       );
     } on AuthException catch (e) {
-      throw ServerException(e.message);
+      throw ServerException(_getFriendlyErrorMessage(e.message));
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -81,7 +85,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             : null,
       );
     } on AuthException catch (e) {
-      throw ServerException(e.message);
+      throw ServerException(_getFriendlyErrorMessage(e.message));
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -89,8 +93,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> logout() async {
-    // TODO: Implement logout
-    throw UnimplementedError();
+    try {
+      await supabase.client.auth.signOut();
+    } on AuthException catch (e) {
+      throw ServerException(_getFriendlyErrorMessage(e.message));
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override
@@ -103,5 +112,79 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> refreshToken() async {
     // TODO: Implement refreshToken
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> resetPassword({required String email}) async {
+    try {
+      await supabase.client.auth.resetPasswordForEmail(email);
+    } on AuthException catch (e) {
+      throw ServerException(_getFriendlyErrorMessage(e.message));
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> verifyOtp({required String email, required String token}) async {
+    try {
+      await supabase.client.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.recovery,
+      );
+    } on AuthException catch (e) {
+      throw ServerException(_getFriendlyErrorMessage(e.message));
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updatePassword({required String password}) async {
+    try {
+      await supabase.client.auth.updateUser(UserAttributes(password: password));
+    } on AuthException catch (e) {
+      throw ServerException(_getFriendlyErrorMessage(e.message));
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> verifyEmail({
+    required String email,
+    required String token,
+  }) async {
+    try {
+      await supabase.client.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.signup,
+      );
+    } on AuthException catch (e) {
+      throw ServerException(_getFriendlyErrorMessage(e.message));
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  String _getFriendlyErrorMessage(String message) {
+    if (message.contains('Invalid login credentials')) {
+      return 'Incorrect email or password.';
+    }
+    if (message.contains('User already registered')) {
+      return 'Account with this email already exists.';
+    }
+    if (message.contains('Password should be at least')) {
+      return 'Password must be at least 6 characters long.';
+    }
+    if (message.contains('Email not confirmed')) {
+      return 'Please verify your email address before logging in.';
+    }
+    if (message.contains('Signups not allowed for this instance')) {
+      return 'Registration is currently disabled.';
+    }
+    return message;
   }
 }
