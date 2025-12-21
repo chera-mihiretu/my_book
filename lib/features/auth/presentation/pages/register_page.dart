@@ -12,7 +12,7 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/auth_primary_button.dart';
 import '../widgets/auth_divider.dart';
 import '../widgets/google_signin_button.dart';
-import 'login_page.dart';
+import 'email_verification_page.dart';
 
 /// Modern Register Page with Light Book/eBook Theme - Stateless
 class RegisterPage extends HookWidget {
@@ -72,7 +72,9 @@ class RegisterPage extends HookWidget {
               type: SnackBarType.success,
             );
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginPage()),
+              MaterialPageRoute(
+                builder: (_) => EmailVerificationPage(email: state.user.email),
+              ),
             );
           } else if (state is AuthError) {
             isLoading.value = false;
