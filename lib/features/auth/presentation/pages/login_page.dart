@@ -12,6 +12,7 @@ import '../widgets/auth_text_field.dart';
 import '../widgets/auth_primary_button.dart';
 import '../widgets/auth_divider.dart';
 import '../widgets/google_signin_button.dart';
+import 'forgot_password_page.dart';
 import 'register_page.dart';
 
 /// Modern Login Page with Light Book/eBook Theme - Stateless
@@ -47,10 +48,9 @@ class LoginPage extends HookWidget {
     }
 
     void handleForgotPassword() {
-      CustomSnackBar.show(
+      Navigator.push(
         context,
-        message: 'Forgot Password - Coming Soon',
-        type: SnackBarType.warning,
+        MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
       );
     }
 
@@ -65,7 +65,9 @@ class LoginPage extends HookWidget {
               message: 'Login successful!',
               type: SnackBarType.success,
             );
-            // TODO: Navigate to home
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/', (route) => false);
           } else if (state is AuthError) {
             isLoading.value = false;
             CustomSnackBar.show(
