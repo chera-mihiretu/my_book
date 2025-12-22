@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:new_project/di/injector.dart';
 import 'package:new_project/features/notification_settings/presentation/widgets/notification_settings_dialog.dart';
+import 'package:new_project/features/account/presentation/pages/about_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:new_project/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:new_project/features/auth/presentation/bloc/auth_event.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -36,6 +40,7 @@ class AccountPage extends StatelessWidget {
                   Text(
                     user?.email ?? 'Guest',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -89,10 +94,10 @@ class AccountPage extends StatelessWidget {
           _buildSettingsTile(
             context,
             icon: Icons.help_outline,
-            title: 'Help & Support',
+            title: 'About',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Help & Support - Coming Soon')),
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const AboutPage()),
               );
             },
           ),
@@ -103,12 +108,29 @@ class AccountPage extends StatelessWidget {
           if (user != null)
             ElevatedButton.icon(
               onPressed: () async {
-                await sl<Supabase>().client.auth.signOut();
-                if (context.mounted) {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/login', (route) => false);
-                }
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Logout'),
+                    content: const Text('Are you sure you want to logout?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.read<AuthBloc>().add(LogoutEvent());
+                        },
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               },
               icon: const Icon(Icons.logout),
               label: const Text('Logout'),
