@@ -7,4 +7,5 @@ abstract class NotificationRepository {
   Future<Either<Failure, NotificationSettingsModel>> updateNotificationSettings(
     bool enabled,
   );
+  Future<Either<Failure, NotificationSettingsModel>> saveToken(String token);
 }
