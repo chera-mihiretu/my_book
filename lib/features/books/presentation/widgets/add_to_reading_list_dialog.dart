@@ -102,8 +102,11 @@ class _AddToReadingListDialogState extends State<AddToReadingListDialog> {
     _daySelectorKey.currentState?.validate();
 
     if (_formKey.currentState!.validate() && _selectedTimes.isNotEmpty) {
-      // Convert selected times map to list of TimeOfDay
-      final whenToReadList = _selectedTimes.values.toList();
+      // Convert selected times map to list of TimeOfDay? with nulls for unselected days
+      final daysOfWeek = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
+      final whenToReadList = daysOfWeek.map((day) {
+        return _selectedTimes[day];
+      }).toList();
 
       // Prepare book with reading list data
       final bookWithReadingData = widget.book.copyWith(
