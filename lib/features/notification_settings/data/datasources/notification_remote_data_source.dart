@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/notification_settings_model.dart';
@@ -5,6 +7,7 @@ import '../models/notification_settings_model.dart';
 abstract class NotificationRemoteDataSource {
   Future<NotificationSettingsModel> getNotificationSettings();
   Future<NotificationSettingsModel> updateNotificationSettings(bool enabled);
+  Future<NotificationSettingsModel> saveToken(String token);
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -69,6 +72,30 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('user_id', userId)
+          .select()
+          .single();
+
+      return NotificationSettingsModel.fromJson(response);
+    } catch (e) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<NotificationSettingsModel> saveToken(String token) async {
+    try {
+      final userId = supabase.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw ServerException();
+      }
+
+      final response = await supabase.client
+          .from('notifications')
+          .upsert({
+            'user_id': userId,
+            'fcm_token': token,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
           .select()
           .single();
 
