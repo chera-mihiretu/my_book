@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -32,6 +34,20 @@ class NotificationRepositoryImpl implements NotificationRepository {
       return Right(result);
     } on ServerException {
       return Left(ServerFailure('Failed to update notification settings'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, NotificationSettingsModel>> saveToken(
+    String token,
+  ) async {
+    try {
+      final result = await remoteDataSource.saveToken(token);
+      return Right(result);
+    } on ServerException {
+      return const Left(ServerFailure('Failed to save notification token'));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
