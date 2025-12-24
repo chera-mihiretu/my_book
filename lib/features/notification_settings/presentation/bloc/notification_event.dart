@@ -16,3 +16,10 @@ class UpdateNotificationSettingsEvent extends NotificationEvent {
   @override
   List<Object?> get props => [enabled];
 }
+
+class NotificationTokenSave extends NotificationEvent {
+  final String token;
+  const NotificationTokenSave(this.token);
+  @override
+  List<Object?> get props => [token];
+}
