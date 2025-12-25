@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/models/book_model.dart';
@@ -17,6 +18,7 @@ class SearchRemoteDataSourceImpl implements SearchRemoteDataSource {
 
   @override
   Future<List<BookModel>> searchBooks(String query, {int page = 1}) async {
+    log(ApiEndpoints.searchBook(query, page: page));
     final response = await client.get(
       Uri.parse(ApiEndpoints.searchBook(query, page: page)),
       headers: {'Content-Type': 'application/json'},
@@ -34,6 +36,7 @@ class SearchRemoteDataSourceImpl implements SearchRemoteDataSource {
 
   @override
   Future<List<AuthorModel>> searchAuthors(String query, {int page = 1}) async {
+    log(ApiEndpoints.searchAuthor(query, page: page));
     final response = await client.get(
       Uri.parse(ApiEndpoints.searchAuthor(query, page: page)),
       headers: {'Content-Type': 'application/json'},
