@@ -50,21 +50,31 @@ class SearchLoading extends SearchState {}
 class SearchLoaded extends SearchState {
   final List<BookModel> books;
   final bool hasReachedMax;
+  final bool isFetchingMore;
 
-  const SearchLoaded({required this.books, this.hasReachedMax = false});
+  const SearchLoaded({
+    required this.books,
+    this.hasReachedMax = false,
+    this.isFetchingMore = false,
+  });
 
   @override
-  List<Object> get props => [books, hasReachedMax];
+  List<Object> get props => [books, hasReachedMax, isFetchingMore];
 }
 
 class AuthorSearchLoaded extends SearchState {
   final List<AuthorModel> authors;
   final bool hasReachedMax;
+  final bool isFetchingMore;
 
-  const AuthorSearchLoaded({required this.authors, this.hasReachedMax = false});
+  const AuthorSearchLoaded({
+    required this.authors,
+    this.hasReachedMax = false,
+    this.isFetchingMore = false,
+  });
 
   @override
-  List<Object> get props => [authors, hasReachedMax];
+  List<Object> get props => [authors, hasReachedMax, isFetchingMore];
 }
 
 class SearchError extends SearchState {
@@ -95,29 +105,75 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   ) async {
     if (event.page == 1) {
       emit(SearchLoading());
+    } else {
+      // If we are already loading more, ignore this event
+      if (state is SearchLoaded && (state as SearchLoaded).isFetchingMore) {
+        return;
+      }
+
+      // Emit state with isFetchingMore = true
+      if (state is SearchLoaded) {
+        final currentLoaded = state as SearchLoaded;
+        emit(
+          SearchLoaded(
+            books: currentLoaded.books,
+            hasReachedMax: currentLoaded.hasReachedMax,
+            isFetchingMore: true,
+          ),
+        );
+      }
     }
 
     final result = await searchBooksUseCase(event.query, page: event.page);
 
-    result.fold((failure) => emit(SearchError(failure.message)), (books) {
-      if (state is SearchLoaded && event.page > 1) {
-        final currentBooks = (state as SearchLoaded).books;
+    result.fold(
+      (failure) {
+        // If it was a pagination error, we might want to keep the old data and show a snackbar (UI handle)
+        // For now, if it's page 1, show full error. If page > 1, maybe just revert isFetchingMore?
+        // The current implementation replaces everything with SearchError which clears the list.
+        // Ideally we would want to keep the list and just show an error.
+        // But adhering to existing pattern for now (or improving slightly):
 
-        emit(
-          SearchLoaded(
-            books: currentBooks + books,
-            hasReachedMax: books.isEmpty || books.length < 10,
-          ),
-        );
-      } else {
-        emit(
-          SearchLoaded(
-            books: books,
-            hasReachedMax: books.isEmpty || books.length < 10,
-          ),
-        );
-      }
-    });
+        if (event.page > 1 && state is SearchLoaded) {
+          // Revert isFetchingMore but keep data
+          final currentLoaded = state as SearchLoaded;
+          emit(
+            SearchLoaded(
+              books: currentLoaded.books,
+              hasReachedMax: currentLoaded.hasReachedMax,
+              isFetchingMore: false,
+            ),
+          );
+          // We could emit a side-effect or a transient error here if needed,
+          // but for now let's just log or ignore to prevent list disappearance on pagination fail.
+          // Or if we must show error:
+          emit(SearchError(failure.message));
+        } else {
+          emit(SearchError(failure.message));
+        }
+      },
+      (books) {
+        if (state is SearchLoaded && event.page > 1) {
+          final currentBooks = (state as SearchLoaded).books;
+
+          emit(
+            SearchLoaded(
+              books: currentBooks + books,
+              hasReachedMax: books.isEmpty || books.length < 10,
+              isFetchingMore: false,
+            ),
+          );
+        } else {
+          emit(
+            SearchLoaded(
+              books: books,
+              hasReachedMax: books.isEmpty || books.length < 10,
+              isFetchingMore: false,
+            ),
+          );
+        }
+      },
+    );
   }
 
   Future<void> _onSearchAuthors(
@@ -126,28 +182,64 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   ) async {
     if (event.page == 1) {
       emit(SearchLoading());
+    } else {
+      // If we are already loading more, ignore this event
+      if (state is AuthorSearchLoaded &&
+          (state as AuthorSearchLoaded).isFetchingMore) {
+        return;
+      }
+      // Emit state with isFetchingMore = true
+      if (state is AuthorSearchLoaded) {
+        final currentLoaded = state as AuthorSearchLoaded;
+        emit(
+          AuthorSearchLoaded(
+            authors: currentLoaded.authors,
+            hasReachedMax: currentLoaded.hasReachedMax,
+            isFetchingMore: true,
+          ),
+        );
+      }
     }
 
     final result = await searchAuthorsUseCase(event.query, page: event.page);
 
-    result.fold((failure) => emit(SearchError(failure.message)), (authors) {
-      if (state is AuthorSearchLoaded && event.page > 1) {
-        final currentAuthors = (state as AuthorSearchLoaded).authors;
+    result.fold(
+      (failure) {
+        if (event.page > 1 && state is AuthorSearchLoaded) {
+          final currentLoaded = state as AuthorSearchLoaded;
+          emit(
+            AuthorSearchLoaded(
+              authors: currentLoaded.authors,
+              hasReachedMax: currentLoaded.hasReachedMax,
+              isFetchingMore: false,
+            ),
+          );
+          emit(SearchError(failure.message));
+        } else {
+          emit(SearchError(failure.message));
+        }
+      },
+      (authors) {
+        if (state is AuthorSearchLoaded && event.page > 1) {
+          final currentAuthors = (state as AuthorSearchLoaded).authors;
 
-        emit(
-          AuthorSearchLoaded(
-            authors: currentAuthors + authors,
-            hasReachedMax: authors.isEmpty || authors.length < 10,
-          ),
-        );
-      } else {
-        emit(
-          AuthorSearchLoaded(
-            authors: authors,
-            hasReachedMax: authors.isEmpty || authors.length < 10,
-          ),
-        );
-      }
-    });
+          emit(
+            AuthorSearchLoaded(
+              authors: currentAuthors + authors,
+              hasReachedMax: authors.isEmpty || authors.length < 10,
+              isFetchingMore: false,
+            ),
+          );
+        } else {
+          emit(
+            AuthorSearchLoaded(
+              authors: authors,
+              hasReachedMax: authors.isEmpty || authors.length < 10,
+              isFetchingMore: false,
+            ),
+          );
+        }
+      },
+    );
   }
 }
