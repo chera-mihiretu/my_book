@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/models/book_model.dart';
 import '../../domain/usecases/add_to_reading_list_usecase.dart';
 import '../../domain/usecases/get_reading_list_usecase.dart';
 import '../../domain/usecases/update_current_page_usecase.dart';
@@ -37,7 +38,10 @@ class ReadingListBloc extends Bloc<ReadingListEvent, ReadingListState> {
     LoadReadingListEvent event,
     Emitter<ReadingListState> emit,
   ) async {
-    emit(const ReadingListLoading());
+    if (event.offset == 0) {
+      emit(const ReadingListLoading());
+    }
+
     final result = await getReadingListUseCase(
       limit: event.limit,
       offset: event.offset,
@@ -45,8 +49,14 @@ class ReadingListBloc extends Bloc<ReadingListEvent, ReadingListState> {
     result.fold((failure) => emit(ReadingListError(failure.message)), (books) {
       // Sort books by upcoming read time
       final sortedBooks = _sortByUpcomingReadTime(books);
+
+      List<BookModel> allBooks = sortedBooks;
+      if (state is ReadingListLoaded && event.offset > 0) {
+        allBooks = [...(state as ReadingListLoaded).books, ...sortedBooks];
+      }
+
       emit(
-        ReadingListLoaded(sortedBooks, hasMore: books.length >= event.limit),
+        ReadingListLoaded(allBooks, hasMore: sortedBooks.length >= event.limit),
       );
     });
   }
@@ -104,7 +114,7 @@ class ReadingListBloc extends Bloc<ReadingListEvent, ReadingListState> {
   }
 
   int? _getNextReadTime(
-    List<TimeOfDay>? whenToRead,
+    List<TimeOfDay?>? whenToRead,
     int currentDay,
     TimeOfDay currentTime,
   ) {
@@ -117,6 +127,7 @@ class ReadingListBloc extends Bloc<ReadingListEvent, ReadingListState> {
       if (dayIndex >= whenToRead.length) continue;
 
       final readTime = whenToRead[dayIndex];
+      if (readTime == null) continue;
 
       final minutesFromNow =
           i * 24 * 60 +
