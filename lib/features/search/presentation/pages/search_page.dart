@@ -45,12 +45,14 @@ class _SearchPageState extends State<SearchPage> {
 
       if (_selectedFilterIndex == 0 &&
           state is SearchLoaded &&
-          !state.hasReachedMax) {
+          !state.hasReachedMax &&
+          !state.isFetchingMore) {
         _currentPage++;
         bloc.add(SearchBooks(_searchController.text, page: _currentPage));
       } else if (_selectedFilterIndex == 1 &&
           state is AuthorSearchLoaded &&
-          !state.hasReachedMax) {
+          !state.hasReachedMax &&
+          !state.isFetchingMore) {
         _currentPage++;
         bloc.add(SearchAuthors(_searchController.text, page: _currentPage));
       }
