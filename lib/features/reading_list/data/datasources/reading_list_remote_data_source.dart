@@ -34,10 +34,11 @@ class ReadingListRemoteDataSourceImpl implements ReadingListRemoteDataSource {
           .eq('user_id', userId)
           .eq('book_key', book.bookKey ?? '-----');
 
-      // Convert whenToRead (List<TimeOfDay>) to TIME[] format for PostgreSQL
-      List<String>? whenToReadTimes;
+      // Convert whenToRead (List<TimeOfDay?>?) to TIME[] format for PostgreSQL
+      List<String?>? whenToReadTimes;
       if (book.whenToRead != null && book.whenToRead!.isNotEmpty) {
         whenToReadTimes = book.whenToRead!.map((timeOfDay) {
+          if (timeOfDay == null) return null;
           final hour = timeOfDay.hour.toString().padLeft(2, '0');
           final minute = timeOfDay.minute.toString().padLeft(2, '0');
           return '$hour:$minute:00';

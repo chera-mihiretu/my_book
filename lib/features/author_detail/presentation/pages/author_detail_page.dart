@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/models/author_detail_model.dart';
+import '../../../../core/models/work_model.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/widgets/custom_loading.dart';
+import '../../../../di/injector.dart';
 import '../bloc/author_detail_bloc.dart';
+import '../bloc/author_works_bloc.dart';
 
 class AuthorDetailPage extends StatefulWidget {
   final String authorKey;
@@ -24,21 +27,21 @@ class _AuthorDetailPageState extends State<AuthorDetailPage> {
   @override
   void initState() {
     super.initState();
-    // Dispatch event to load author details using existing bloc
     context.read<AuthorDetailBloc>().add(LoadAuthorDetail(widget.authorKey));
+    context.read<AuthorWorksBloc>().add(GetAuthorWorks(widget.authorKey));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocBuilder<AuthorDetailBloc, AuthorDetailState>(
-        builder: (context, state) {
-          if (state is AuthorDetailLoading) {
+        builder: (context, detailState) {
+          if (detailState is AuthorDetailLoading) {
             return _buildLoadingState();
-          } else if (state is AuthorDetailLoaded) {
-            return _buildLoadedState(context, state.authorDetail);
-          } else if (state is AuthorDetailError) {
-            return _buildErrorState(context, state.message);
+          } else if (detailState is AuthorDetailLoaded) {
+            return _buildLoadedState(context, detailState.authorDetail);
+          } else if (detailState is AuthorDetailError) {
+            return _buildErrorState(context, detailState.message);
           }
           return const SizedBox.shrink();
         },
@@ -114,10 +117,109 @@ class _AuthorDetailPageState extends State<AuthorDetailPage> {
                   author.alternateNames!.isNotEmpty)
                 _buildAlternateNamesSection(context, author.alternateNames!),
               const SizedBox(height: 32),
+              // Works Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Works',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
+        // Works List
+        BlocBuilder<AuthorWorksBloc, AuthorWorksState>(
+          builder: (context, state) {
+            if (state is AuthorWorksLoading) {
+              return SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: CustomLoading.inline(size: 32),
+                  ),
+                ),
+              );
+            } else if (state is AuthorWorksError) {
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Failed to load works: ${state.message}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+              );
+            } else if (state is AuthorWorksLoaded) {
+              if (state.works.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No works found.'),
+                  ),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return _buildWorkItem(context, state.works[index]);
+                }, childCount: state.works.length),
+              );
+            }
+            return const SliverToBoxAdapter(child: SizedBox.shrink());
+          },
+        ),
+        const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
       ],
+    );
+  }
+
+  Widget _buildWorkItem(BuildContext context, WorkModel work) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: work.coverId != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  ApiEndpoints.coverUrl(work.coverId!),
+                  width: 50,
+                  height: 75,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 50,
+                    height: 75,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.book, size: 20),
+                  ),
+                ),
+              )
+            : Container(
+                width: 50,
+                height: 75,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.book, size: 20),
+              ),
+        title: Text(
+          work.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: work.created != null
+            ? Text('Created: ${work.created!.split('T')[0]}')
+            : null,
+      ),
     );
   }
 
@@ -175,7 +277,7 @@ class _AuthorDetailPageState extends State<AuthorDetailPage> {
               ),
               child: Center(
                 child: Text(
-                  author.name[0].toUpperCase(),
+                  author.name.isNotEmpty ? author.name[0].toUpperCase() : '?',
                   style: TextStyle(
                     color: colorScheme.onPrimary,
                     fontSize: 48,
