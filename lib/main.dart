@@ -1,11 +1,19 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_project/features/author_detail/presentation/bloc/author_detail_bloc.dart';
+import 'package:new_project/features/author_detail/presentation/bloc/author_works_bloc.dart';
 import 'package:new_project/features/books/presentation/bloc/book_detail_bloc.dart';
 import 'package:new_project/features/completed/presentation/bloc/completed_bloc.dart';
 import 'package:new_project/features/notification_settings/presentation/bloc/notification_bloc.dart';
+import 'package:new_project/features/notification_settings/presentation/bloc/notification_event.dart';
 import 'package:new_project/features/search/presentation/bloc/search_bloc.dart';
+import 'package:new_project/firebase_options.dart';
 import 'package:new_project/wrapper_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'di/injector.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -27,7 +35,7 @@ import 'core/widgets/custom_bottom_nav.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Initialize dependency injection
   await initializeDependencies();
 
@@ -52,6 +60,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<ReadingProgressBloc>()),
         BlocProvider(create: (_) => sl<CompletedBloc>()),
         BlocProvider(create: (_) => sl<NotificationBloc>()),
+        BlocProvider(create: (_) => sl<AuthorWorksBloc>()),
       ],
       child: MaterialApp(
         title: 'Book App',
@@ -59,8 +68,9 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const WrapperPage(),
+        initialRoute: '/',
         routes: {
+          '/': (context) => const WrapperPage(),
           '/login': (context) => const LoginPage(),
           '/home': (context) => const HomePage(),
           '/colors': (context) => const ColorsPage(),
@@ -87,6 +97,38 @@ class _HomePageState extends State<HomePage> {
     CompletedPage(),
     AccountPage(),
   ];
+
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      authState,
+    ) async {
+      if (authState.session != null) {
+        FirebaseMessaging.instance.requestPermission();
+        await FirebaseMessaging.instance.getAPNSToken();
+
+        final token = await FirebaseMessaging.instance.getToken();
+        if (token != null && mounted) {
+          context.read<NotificationBloc>().add(NotificationTokenSave(token));
+        }
+      }
+
+      FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+        if (Supabase.instance.client.auth.currentUser != null && mounted) {
+          context.read<NotificationBloc>().add(NotificationTokenSave(token));
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
