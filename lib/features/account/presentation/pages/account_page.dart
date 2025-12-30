@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:new_project/di/injector.dart';
 import 'package:new_project/features/notification_settings/presentation/widgets/notification_settings_dialog.dart';
 import 'package:new_project/features/account/presentation/pages/about_page.dart';
+import 'package:new_project/core/widgets/custom_snackbar.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:new_project/features/auth/presentation/bloc/auth_bloc.dart';
@@ -75,8 +77,10 @@ class AccountPage extends StatelessWidget {
             icon: Icons.person_outline,
             title: 'Edit Profile',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Edit Profile - Coming Soon')),
+              CustomSnackBar.show(
+                context,
+                message: 'Edit Profile - Coming Soon',
+                type: SnackBarType.warning,
               );
             },
           ),
