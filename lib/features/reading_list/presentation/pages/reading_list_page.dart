@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/custom_loading.dart';
+import '../../../search/presentation/pages/search_page.dart';
 import '../bloc/reading_list_bloc.dart';
 import '../bloc/reading_list_event.dart';
 import '../bloc/reading_list_state.dart';
@@ -84,7 +85,47 @@ class _ReadingListPageState extends State<ReadingListPage> {
 
             if (state is ReadingListLoaded) {
               if (state.books.isEmpty) {
-                return const Center(child: Text('No books in reading list'));
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.book_outlined,
+                        size: 80,
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'No books in reading list',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SearchPage(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add Reading Book'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
 
               return ListView.builder(
