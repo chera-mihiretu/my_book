@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/notification_bloc.dart';
 import '../bloc/notification_event.dart';
 import '../bloc/notification_state.dart';
+import '../../../../core/widgets/custom_snackbar.dart';
 
 class NotificationSettingsDialog extends StatefulWidget {
   const NotificationSettingsDialog({super.key});
@@ -36,19 +37,17 @@ class _NotificationSettingsDialogState
           setState(() {
             _notificationEnabled = state.settings.notification;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: colorScheme.primary,
-            ),
+          CustomSnackBar.show(
+            context,
+            message: state.message,
+            type: SnackBarType.success,
           );
           Navigator.of(context).pop();
         } else if (state is NotificationError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: colorScheme.error,
-            ),
+          CustomSnackBar.show(
+            context,
+            message: state.message,
+            type: SnackBarType.error,
           );
         }
       },
