@@ -364,158 +364,163 @@ class _ReadingListBookDetailPageState extends State<ReadingListBookDetailPage> {
           }
         },
         child: Scaffold(
-          body: CustomScrollView(
-            slivers: [
-              // App Bar with Book Cover
-              SliverAppBar(
-                expandedHeight: 300,
-                pinned: true,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Hero(
-                    tag: 'book_cover_${widget.book.id ?? widget.book.bookKey}',
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-                          _getImageUrl(),
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              child: const Icon(Icons.book, size: 100),
-                            );
-                          },
-                        ),
-                        // Gradient overlay for better text readability
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withAlpha((0.7 * 255).toInt()),
-                              ],
+          body: SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                // App Bar with Book Cover
+                SliverAppBar(
+                  expandedHeight: 300,
+                  pinned: true,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Hero(
+                      tag:
+                          'book_cover_${widget.book.id ?? widget.book.bookKey}',
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.network(
+                            _getImageUrl(),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
+                                child: const Icon(Icons.book, size: 100),
+                              );
+                            },
+                          ),
+                          // Gradient overlay for better text readability
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withAlpha((0.7 * 255).toInt()),
+                                ],
+                              ),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Content
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title
+                        Text(
+                          book.title,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
+                        const SizedBox(height: 8),
+
+                        // Author
+                        if (book.authorName != null &&
+                            book.authorName!.isNotEmpty)
+                          Text(
+                            'by ${book.authorName!.join(', ')}',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        const SizedBox(height: 24),
+
+                        // Loading indicator for additional details
+                        if (_isLoadingDetails)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: CustomLoading.inline(),
+                            ),
+                          ),
+
+                        // Book Information
+                        if (!_isLoadingDetails) ...[
+                          _buildInfoCard(context, book),
+                          const SizedBox(height: 24),
+                        ],
+
+                        if (book.durationToRead != null &&
+                            !book.completed &&
+                            (book.currentPage != book.numberOfPages)) ...[
+                          Text(
+                            'Reading Timer',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          CountdownTimerWidget(
+                            durationInMinutes: book.durationToRead!,
+                            initialElapsedSeconds: _initialElapsedSeconds,
+                            autoStart: _initialElapsedSeconds > 0,
+                            onTimerStart: _onTimerStart,
+                            onTimerComplete: _onTimerComplete,
+                            onProgressSave: _saveReadingProgress,
+                            onTimerRunningChanged: (isRunning) {
+                              setState(() {
+                                _isTimerRunning = isRunning;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Subjects
+                        if (book.subjects != null &&
+                            book.subjects!.isNotEmpty) ...[
+                          Text(
+                            'Subjects',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: book.subjects!
+                                .take(10) // Limit to 10 subjects
+                                .map(
+                                  (subject) => Chip(
+                                    label: Text(subject),
+                                    backgroundColor: theme
+                                        .colorScheme
+                                        .surfaceContainerHighest,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Reading Schedule
+                        if (book.whenToRead != null &&
+                            book.whenToRead!.any((t) => t != null)) ...[
+                          _buildReadingScheduleCard(context, book),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Reading Progress
+                        if (book.currentPage != null &&
+                            book.numberOfPages != null)
+                          _buildProgressCard(context, book),
                       ],
                     ),
                   ),
                 ),
-              ),
-
-              // Content
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title
-                      Text(
-                        book.title,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Author
-                      if (book.authorName != null &&
-                          book.authorName!.isNotEmpty)
-                        Text(
-                          'by ${book.authorName!.join(', ')}',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      const SizedBox(height: 24),
-
-                      // Loading indicator for additional details
-                      if (_isLoadingDetails)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: CustomLoading.inline(),
-                          ),
-                        ),
-
-                      // Book Information
-                      if (!_isLoadingDetails) ...[
-                        _buildInfoCard(context, book),
-                        const SizedBox(height: 24),
-                      ],
-
-                      if (book.durationToRead != null &&
-                          !book.completed &&
-                          (book.currentPage != book.numberOfPages)) ...[
-                        Text(
-                          'Reading Timer',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        CountdownTimerWidget(
-                          durationInMinutes: book.durationToRead!,
-                          initialElapsedSeconds: _initialElapsedSeconds,
-                          autoStart: _initialElapsedSeconds > 0,
-                          onTimerStart: _onTimerStart,
-                          onTimerComplete: _onTimerComplete,
-                          onProgressSave: _saveReadingProgress,
-                          onTimerRunningChanged: (isRunning) {
-                            setState(() {
-                              _isTimerRunning = isRunning;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Subjects
-                      if (book.subjects != null &&
-                          book.subjects!.isNotEmpty) ...[
-                        Text(
-                          'Subjects',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: book.subjects!
-                              .take(10) // Limit to 10 subjects
-                              .map(
-                                (subject) => Chip(
-                                  label: Text(subject),
-                                  backgroundColor:
-                                      theme.colorScheme.surfaceContainerHighest,
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Reading Schedule
-                      if (book.whenToRead != null &&
-                          book.whenToRead!.any((t) => t != null)) ...[
-                        _buildReadingScheduleCard(context, book),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Reading Progress
-                      if (book.currentPage != null &&
-                          book.numberOfPages != null)
-                        _buildProgressCard(context, book),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
